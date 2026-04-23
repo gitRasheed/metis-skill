@@ -2,63 +2,60 @@
 
 Metis is a coding skill for LLMs.
 
-It is for implementation, refactoring, and code review work where you want the model to lean toward:
+It is meant for implementation, refactoring, and code review work where you want the model to write cleaner, simpler, more deliberate code.
 
-- plain-data domain models
-- top-down API design
+## What it pushes models toward
+
+- plain-data domain models over behavior-heavy object hierarchies
+- top-down API design and call-site-first thinking
 - explicit control flow
-- boundary assertions
+- boundary assertions instead of implicit assumptions
 - behavior-focused testing
 - early performance thinking
+- sparse, useful comments instead of AI-slop narration
 
-The goal is not rigid dogma. The goal is better engineering judgment.
+These are defaults, not laws. Metis is opinionated, but it is not meant to fight the local codebase for no reason.
 
 ## Install
 
-Before publishing, test it from a local checkout:
-
-```bash
-npx skills add . --skill metis -g
-```
-
-Target a specific agent if you want:
-
-```bash
-npx skills add . --skill metis -g -a codex
-npx skills add . --skill metis -g -a claude-code
-```
-
-If symlinks are blocked on Windows, use `--copy`.
-
-```bash
-npx skills add . --skill metis -g -a codex --copy
-```
-
-After you push the repo, the same command works with the GitHub URL instead of `.`:
+Install from GitHub with:
 
 ```bash
 npx skills add https://github.com/gitRasheed/metis-skill --skill metis -g
 ```
 
+Install only for a specific agent if you want:
+
+```bash
+npx skills add https://github.com/gitRasheed/metis-skill --skill metis -g -a codex
+npx skills add https://github.com/gitRasheed/metis-skill --skill metis -g -a claude-code
+```
+
+If symlinks are blocked on Windows, add `--copy`.
+
+```bash
+npx skills add https://github.com/gitRasheed/metis-skill --skill metis -g -a codex --copy
+```
+
 ## Use
 
-In Codex, invoke it as `$metis`.
+- In Codex, invoke it as `$metis`
+- In Claude Code, invoke it as `/metis`
 
-In Claude Code, the standalone skill is available as `/metis` when the repo is open as a project, or when `.claude/skills/metis/` is copied into your global Claude skills directory.
-
-## Structure
+Example prompts:
 
 ```text
-metis-skill/
-├── .claude/skills/metis/SKILL.md
-├── skills/metis/SKILL.md
-├── skills/metis/agents/openai.yaml
-├── skills/metis/references/
-└── PORTABLE_PROMPT.md
+Use $metis to refactor this module.
+Use $metis to review this design.
+Use $metis to implement this feature.
 ```
+
+## What is in this repo
+
+- `skills/metis/` is the main skill
+- `.claude/skills/metis/` is the Claude Code version
+- `PORTABLE_PROMPT.md` is the plain markdown version for tools that do not support skills directly
 
 ## Notes
 
-- `skills/metis/` is the main skill.
-- `.claude/skills/metis/` is the standalone Claude version.
-- `PORTABLE_PROMPT.md` is the plain markdown version for other agents.
+Metis is meant to improve engineering judgment, not make a model rigid. If the surrounding codebase, framework, or language conventions clearly call for a different shape, follow those and keep the spirit of the skill.
