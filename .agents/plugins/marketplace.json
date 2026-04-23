@@ -1,0 +1,20 @@
+{
+  "name": "metis-marketplace",
+  "interface": {
+    "displayName": "Metis Marketplace"
+  },
+  "plugins": [
+    {
+      "name": "metis-skill",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Engineering"
+    }
+  ]
+}

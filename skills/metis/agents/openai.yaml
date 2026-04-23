@@ -1,0 +1,4 @@
+interface:
+  display_name: "Metis"
+  short_description: "Plain data, top-down, performance-aware coding style"
+  default_prompt: "Use $metis to implement, refactor, or review this code in a plain-data, top-down, explicit style."
