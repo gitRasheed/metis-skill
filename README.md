@@ -46,22 +46,11 @@ In Codex, invoke it as `$metis`.
 
 In Claude Code, the standalone skill is available as `/metis` when the repo is open as a project, or when `.claude/skills/metis/` is copied into your global Claude skills directory.
 
-## Codex plugin
-
-This repo also includes a Codex plugin wrapper and marketplace catalog:
-
-- `.codex-plugin/plugin.json`
-- `.agents/plugins/marketplace.json`
-
-That gives you a native Codex plugin path in addition to the simpler `npx skills add` path.
-
 ## Structure
 
 ```text
 metis-skill/
-├── .agents/plugins/marketplace.json
 ├── .claude/skills/metis/SKILL.md
-├── .codex-plugin/plugin.json
 ├── skills/metis/SKILL.md
 ├── skills/metis/agents/openai.yaml
 ├── skills/metis/references/
