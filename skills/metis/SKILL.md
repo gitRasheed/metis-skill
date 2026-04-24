@@ -1,6 +1,6 @@
 ---
 name: metis
-description: Prefer pure functions, plain-data domain models, system-oriented decomposition, top-down API design, boundary assertions, simple control flow, and explicit behavior-focused tests. Use when implementing, refactoring, or reviewing code that should avoid inheritance-heavy architecture, isolate mutation and I/O, and stay performance-aware from the design stage.
+description: Prefer pure functions, plain-data domain models, system-oriented decomposition, top-down API design, boundary assertions, simple control flow, and explicit behavior-focused tests. Use when an LLM is implementing a feature, fixing a non-trivial bug, planning or executing a refactor, shaping module or API boundaries, or reviewing code and pull requests where cleaner architecture and behavior-first testing matter. Especially useful for complex coding or agentic tasks where the model might otherwise overcomplicate the design, mix concerns, or treat tests as post hoc justification. Less relevant for trivial one-line edits, pure prose tasks, or rote mechanical changes.
 ---
 
 # Metis
