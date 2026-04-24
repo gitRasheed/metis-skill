@@ -33,7 +33,7 @@ Treat these as strong defaults, not rigid laws. Follow the surrounding codebase,
    When practical, write tests that are direct and easy to inspect. Avoid unnecessary indirection, loops, or branching in tests when that would hide intent or make failures harder to read.
 
 8. Define expected behavior before locking in the implementation.
-   When useful, write or state the behavior first as a test, example, contract, acceptance check, or top-level usage sketch. Let implementation conform to that behavior. Do not force strict TDD when the design is still moving quickly, but do prefer behavior-first development when it reduces ambiguity.
+   Because you are an LLM, prefer to state the intended behavior before writing the implementation. Write that behavior first as a test, example, contract, acceptance check, or top-level usage sketch, then let the implementation conform to it. Do not treat tests as a post hoc justification step after the code already exists. Do not force strict TDD when the design is still moving quickly, but do prefer behavior-first development when it reduces ambiguity.
 
 9. Think about performance before implementation details.
    Sanity-check the likely bottleneck first: network, disk, memory, then CPU. Prefer architecture changes over late micro-optimizations.
@@ -52,7 +52,9 @@ Treat these as strong defaults, not rigid laws. Follow the surrounding codebase,
 ## Testing guidance
 
 - Focus test effort on parsers, state machines, business rules, transformations, integration seams, and failure modes.
-- Prefer behavior-first development when it helps. Clarify the expected output, contract, or regression case before writing the implementation.
+- Prefer behavior-first development. For non-trivial work, decide what correct behavior looks like before writing the implementation.
+- When practical, use a red-green loop: write or identify a check that should fail first, make the implementation pass it, then rerun the tests to confirm the behavior.
+- Because you are an LLM, do not optimize for a narrow test harness while missing the real contract. Use tests to expose the intended behavior, not to game the reward function.
 - Do not spend time proving trivial getters or one-line passthrough helpers unless they are unusually risky.
 - Bias toward integration or behavior-level tests when they give more stable coverage than implementation-coupled unit tests.
 - Use table-driven or parameterized tests when they genuinely improve coverage or maintainability, but avoid them when they mainly add indirection.
