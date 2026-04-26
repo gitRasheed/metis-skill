@@ -39,8 +39,18 @@ npx skills add https://github.com/gitRasheed/metis-skill --skill metis -g -a cod
 
 ## Use
 
-- In Codex, invoke it as `$metis`
-- In Claude Code, invoke it as `/metis`
+Metis is meant to auto-load for relevant coding work, especially:
+
+- implementing features
+- fixing non-trivial bugs
+- planning or executing refactors
+- shaping module or API boundaries
+- reviewing code or pull requests
+
+You can also invoke it explicitly:
+
+- Codex: `$metis`
+- Claude Code: `/metis`
 
 Example prompts:
 
