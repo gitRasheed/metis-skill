@@ -43,11 +43,175 @@ Treat these as strong defaults, not rigid laws. Follow the surrounding codebase,
 - Prefer pure functions by default. Introduce mutation when it clearly improves correctness, interoperability, or performance.
 - Prefer data transformations over deep object hierarchies.
 - Prefer small, explicit abstractions that read well at the call site.
+- Keep invariants and checks close to the operation that depends on them. Avoid validating something early and then relying on that fact much later if the data can drift.
+- If an external API has an awkward or rigid interface, hide it behind an adapter layer so the rest of the code can speak in the cleaner interface you wish you had.
 - Prefer boundary validation over trusting implicit assumptions.
 - Prefer code that is easy to verify by reading.
 - Keep comments sparse. Add them for non-obvious reasoning, invariants, or structure, not to narrate obvious code line by line.
 - Remove AI-slop comments and other style that feels inconsistent with the surrounding file.
 - Prefer adapting to an existing team style over forcing this skill mechanically into every file.
+
+## Pattern examples
+
+Use these examples as direction, not rigid templates.
+
+### 1. Call-site-first API design
+
+Good:
+
+```python
+def register_user(form_data):
+    user = parse_signup_form(form_data)
+    ensure_email_available(user.email)
+    password_hash = hash_password(user.password)
+    return save_user(user, password_hash)
+```
+
+Bad:
+
+```python
+def hash_password(password, rounds=12, salt=None, pepper=None): ...
+def save_user_record(conn, table, user_dict, password_hash): ...
+
+def register_user(form_data):
+    # Caller is shaped around helper internals instead of the desired flow.
+    ...
+```
+
+Write the top-level flow first. Let helper names and signatures conform to that flow.
+
+### 2. Plain data plus systems over inheritance-heavy objects
+
+Good:
+
+```python
+@dataclass
+class Trade:
+    symbol: str
+    quantity: int
+    limit_price: float | None
+
+def validate_trade(trade: Trade) -> None: ...
+def price_trade(trade: Trade, market) -> Price: ...
+def execute_trade(trade: Trade, broker) -> Receipt: ...
+```
+
+Bad:
+
+```python
+class Trade:
+    def validate(self): ...
+    def price(self): ...
+    def execute(self): ...
+
+class OptionTrade(Trade): ...
+class EquityTrade(Trade): ...
+class CoveredCallTrade(OptionTrade): ...
+```
+
+When behavior is split across large class hierarchies, adding one feature often means touching many parent and child classes. Prefer data plus focused systems or modules.
+
+### 3. Use unions for mutually exclusive states
+
+Good:
+
+```python
+PaymentMethod = CardPayment | CashPayment | BankTransfer
+```
+
+Bad:
+
+```python
+class PaymentMethod: ...
+class CardPayment(PaymentMethod): ...
+class CashPayment(PaymentMethod): ...
+
+if isinstance(method, CardPayment):
+    ...
+elif isinstance(method, CashPayment):
+    ...
+```
+
+If a value is one of several mutually exclusive variants, model that directly instead of simulating it with inheritance and runtime type checks.
+
+### 4. Push ifs up, fors down
+
+Good:
+
+```python
+def process_items(items):
+    credits = [item for item in items if item.kind == "credit"]
+    debits = [item for item in items if item.kind == "debit"]
+
+    if credits:
+        apply_credits(credits)
+    if debits:
+        apply_debits(debits)
+```
+
+```python
+def apply_credits(items):
+    for item in items:
+        post_credit(item)
+```
+
+Bad:
+
+```python
+def process_items(items):
+    for item in items:
+        if item.kind == "credit":
+            post_credit(item)
+        elif item.kind == "debit":
+            post_debit(item)
+        elif item.kind == "refund":
+            post_refund(item)
+```
+
+Keep major decisions in the parent. Keep leaf functions narrow and low-branch so they are easy to verify and test.
+
+### 5. Assert positive and negative space at boundaries
+
+Good:
+
+```python
+def process_transfer(amount: int, flags: int) -> None:
+    assert amount > 0
+    assert amount <= ACCOUNT_BALANCE_MAX
+    assert flags & RESERVED_FLAGS_MASK == 0
+    assert amount != SENTINEL_AMOUNT
+```
+
+Bad:
+
+```python
+def process_transfer(amount: int, flags: int) -> None:
+    # Trusts caller and hopes downstream code catches it.
+    write_to_ledger(amount, flags)
+```
+
+Check what must be true and, when useful, what must not be true. This is especially important at parsing, I/O, API, and state-transition boundaries.
+
+### 6. Prefer explicit procedural tests for non-trivial behavior
+
+Good:
+
+```python
+def test_parse_signup_form_rejects_missing_email():
+    result = parse_signup_form({"password": "secret"})
+    assert result == {"error": "email_required"}
+```
+
+Bad:
+
+```python
+for case in cases:
+    result = parse_signup_form(case.input)
+    if case.want_error and result.ok:
+        raise AssertionError("expected error")
+```
+
+For non-trivial cases, prefer tests where the behavior is obvious from direct code. The more logic in the test, the easier it is for the LLM to hide mistakes in the harness instead of the implementation.
 
 ## Testing guidance
 

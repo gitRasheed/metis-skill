@@ -19,3 +19,12 @@ Use this guidance when implementing, refactoring, or reviewing code:
 - Keep comments minimal. Add comments for non-obvious reasoning or invariants, and remove AI-slop comments that merely narrate the code.
 - Think about bottlenecks early. Start by asking whether the real constraint is network, disk, memory, or CPU before optimizing details.
 - Treat these as strong defaults rather than rigid bans. Respect the surrounding codebase, framework patterns, and language conventions when they clearly matter more.
+
+Quick examples:
+
+- Good API design: write `register_user()` the way you wish it read first, then implement `parse_signup_form()`, `ensure_email_available()`, and `save_user()` to match.
+- Bad API design: build low-level helpers first and make the caller awkwardly conform to their internal argument lists.
+- Good architecture: keep `Trade` as plain data, then put `validate_trade()`, `price_trade()`, and `execute_trade()` in focused modules or functions.
+- Bad architecture: build deep class trees like `Trade -> OptionTrade -> CoveredCallTrade` where each new feature spreads across parent and child methods.
+- Good tests: write direct tests that show one behavior plainly.
+- Bad tests: hide important behavior inside loops, branching, or complicated test harness logic.
