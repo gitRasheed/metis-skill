@@ -10,7 +10,7 @@ Metis is a coding skill for LLMs that improves engineering judgment during imple
 - boundary assertions instead of implicit assumptions
 - behavior-focused testing
 - early performance thinking
-- sparse, useful comments instead of AI-slop narration
+- sparse, useful comments instead of code narration
 
 These are defaults, not laws. Metis is opinionated, but it should improve the local codebase, not fight it.
 
@@ -39,17 +39,14 @@ npx skills add https://github.com/gitRasheed/metis-skill --skill metis -g -a cod
 
 Metis is meant to auto-load for relevant coding work.
 
-You can also invoke it explicitly:
-
-- Codex: `$metis`
-- Claude Code: `/metis`
+You can also invoke it explicitly with `$metis` or `/metis`, depending on the agent UI.
 
 Example prompts:
 
 ```text
-Use $metis to refactor this module.
+Use /metis to refactor this module.
 Use $metis to review this design.
-Use $metis to implement this feature.
+Use /metis to implement this feature.
 ```
 
 ## What is in this repo
@@ -57,3 +54,4 @@ Use $metis to implement this feature.
 - `skills/metis/` is the main skill
 - `.claude/skills/metis/` is the Claude Code version
 - `PORTABLE_PROMPT.md` is the plain markdown version for tools that do not support skills directly
+- `evals/` contains isolated baseline-vs-Metis eval cases and a local runner; raw eval runs stay git-excluded

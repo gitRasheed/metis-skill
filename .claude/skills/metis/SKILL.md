@@ -285,3 +285,4 @@ In those cases, preserve the spirit of the skill:
 - For call-site-first API design: `../../../skills/metis/references/api-design.md`
 - For testing style and tradeoffs: `../../../skills/metis/references/testing.md`
 - For boundary assertions and performance framing: `../../../skills/metis/references/performance-and-safety.md`
+- For optional concrete do/don't examples when the task is complex or ambiguous: `../../../skills/metis/references/examples.md`
