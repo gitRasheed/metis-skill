@@ -1,6 +1,6 @@
 ---
 name: metis
-description: Use when an LLM is implementing a feature, fixing a non-trivial bug, planning or executing a refactor, shaping module or API boundaries, or reviewing code and pull requests where architecture, clarity, and testing discipline matter. Pushes the model toward plain-data domain models, top-down API design, boundary assertions, simple control flow, and behavior-first testing so it does not overcomplicate the design, mix concerns, or treat tests as post hoc justification. Less relevant for trivial one-line edits, pure prose tasks, or rote mechanical changes.
+description: Use when an LLM is doing non-trivial coding work, including implementing features, fixing bugs, refactoring, designing APIs or module boundaries, writing tests, reviewing code, or preparing to commit. Guides the model toward plain data, top-down API design, simple control flow, SOLID without ceremony, boundary assertions, behavior-first testing, final verification, and anti-slop cleanup. Not needed for trivial one-line edits, pure prose, or rote mechanical changes.
 ---
 
 # Metis
@@ -33,7 +33,7 @@ Treat these as strong defaults, not rigid laws. Follow the surrounding codebase,
    When practical, write tests that are direct and easy to inspect. Avoid unnecessary indirection, loops, or branching in tests when that would hide intent or make failures harder to read.
 
 8. Define expected behavior before locking in the implementation.
-   Because you are an LLM, prefer to state the intended behavior before writing the implementation. Write that behavior first as a test, example, contract, acceptance check, or top-level usage sketch, then let the implementation conform to it. Do not treat tests as a post hoc justification step after the code already exists. Do not force strict TDD when the design is still moving quickly, but do prefer behavior-first development when it reduces ambiguity.
+   Because you are an LLM, prefer to state the intended behavior before writing the implementation. When appropriate, write a local behavior check first: usually an integration test, macro behavior test, contract, acceptance check, or top-level usage sketch. Then let the implementation conform to that behavior. Do not treat tests as a post hoc justification step after the code already exists. Do not force strict TDD when the design is still moving quickly, but do prefer behavior-first development when it reduces ambiguity.
 
 9. Think about performance before implementation details.
    Sanity-check the likely bottleneck first: network, disk, memory, then CPU. Prefer architecture changes over late micro-optimizations.
@@ -45,11 +45,24 @@ Treat these as strong defaults, not rigid laws. Follow the surrounding codebase,
 - Prefer small, explicit abstractions that read well at the call site.
 - Keep invariants and checks close to the operation that depends on them. Avoid validating something early and then relying on that fact much later if the data can drift.
 - If an external API has an awkward or rigid interface, hide it behind an adapter layer so the rest of the code can speak in the cleaner interface you wish you had.
+- Use the SOLID checklist below for non-trivial modules, APIs, and code reviews, but adapt it to the local codebase instead of applying it mechanically.
 - Prefer boundary validation over trusting implicit assumptions.
 - Prefer code that is easy to verify by reading.
-- Keep comments sparse. Add them for non-obvious reasoning, invariants, or structure, not to narrate obvious code line by line.
+- Prefer self-explaining code with clear, not bloated, names. Avoid comments by default; when a comment is needed, keep it to one line unless it explains unusually complex behavior, a non-obvious invariant, or an out-of-the-ordinary approach.
 - Remove AI-slop comments and other style that feels inconsistent with the surrounding file.
 - Prefer adapting to an existing team style over forcing this skill mechanically into every file.
+
+## SOLID checklist
+
+For non-trivial design, implementation, refactoring, or review work, run through SOLID as a practical checklist. Skip or adapt any item when the framework, language, or surrounding repository makes it inappropriate.
+
+- S: Does this unit have one clear reason to change? Split orchestration, parsing, persistence, and domain rules when they are tangled.
+- O: For behavior that is actually needed or clearly imminent, can it be added through a focused function, variant, adapter, or module instead of fragile edits across many branches? Do not pre-build extension points for imaginary future cases.
+- L: Can callers rely on the advertised contract for every implementation or variant without special-case surprises?
+- I: Are interfaces narrow enough that callers depend only on operations they actually use?
+- D: Does high-level policy depend on stable abstractions, plain data, or ports rather than low-level I/O clients and framework details?
+
+Do not use SOLID as an excuse for class hierarchies, factories, or ceremony. Prefer the simplest structure that preserves the checklist's intent.
 
 ## Pattern examples
 
@@ -213,16 +226,41 @@ for case in cases:
 
 For non-trivial cases, prefer tests where the behavior is obvious from direct code. The more logic in the test, the easier it is for the LLM to hide mistakes in the harness instead of the implementation.
 
-## Testing guidance
+## Testing checklist
 
-- Focus test effort on parsers, state machines, business rules, transformations, integration seams, and failure modes.
-- Prefer behavior-first development. For non-trivial work, decide what correct behavior looks like before writing the implementation.
-- When practical, use a red-green loop: write or identify a check that should fail first, make the implementation pass it, then rerun the tests to confirm the behavior.
-- Because you are an LLM, do not optimize for a narrow test harness while missing the real contract. Use tests to expose the intended behavior, not to game the reward function.
-- Do not spend time proving trivial getters or one-line passthrough helpers unless they are unusually risky.
-- Bias toward integration or behavior-level tests when they give more stable coverage than implementation-coupled unit tests.
-- Use table-driven or parameterized tests when they genuinely improve coverage or maintainability, but avoid them when they mainly add indirection.
-- Keep failing test output obvious. A reader should be able to tell what behavior broke without reconstructing test control flow.
+1. Focus test effort on parsers, state machines, business rules, transformations, integration seams, and failure modes.
+2. Prefer behavior-first development. For non-trivial work, decide what correct behavior looks like before writing the implementation.
+3. Prefer integration tests, macro behavior tests, contract tests, or executable acceptance checks over low-value unit tests that only mirror implementation details.
+4. When practical, use a red-green loop: write or identify a check that should fail first, make the implementation pass it, then rerun the tests to confirm the behavior.
+5. You may adjust the test as your understanding improves, but do not move the goalposts to make a broken implementation look correct. If the expected behavior changes, make the reason explicit.
+6. Because you are an LLM, do not optimize for a narrow test harness while missing the real contract. Use tests to expose the intended behavior, not to game the reward function.
+7. Do not spend time proving trivial getters or one-line passthrough helpers unless they are unusually risky.
+8. Bias toward integration or behavior-level tests when they give more stable coverage than implementation-coupled unit tests.
+9. Use table-driven or parameterized tests when they genuinely improve coverage or maintainability, but avoid them when they mainly add indirection.
+10. Keep failing test output obvious. A reader should be able to tell what behavior broke without reconstructing test control flow.
+11. Treat LLM-authored tests as temporary scaffolding until proven otherwise. Before committing or pushing, keep only tests that guard stable behavior, prevent a real regression, or fit the repository's existing test style; remove local test slop that only helped you think.
+
+## Final verification checklist
+
+Before claiming the task is done, committing, or pushing:
+
+1. Re-read the user request and confirm the implementation matches the intended behavior.
+2. Run the relevant local checks, tests, build, or executable validation gate. If no useful check exists, say so explicitly.
+3. Read the command output before claiming success. Do not treat a started command as a passed command.
+4. Review the diff for AI slop: unnecessary comments, abnormal defensive code, speculative abstractions, broad rewrites, casts that dodge type errors, and test or documentation spam.
+5. Keep only tests and docs that earn their place in the repository. Remove local scaffolding that helped you think but does not protect stable behavior.
+
+## Long-running sessions
+
+For substantial multi-step work, keep only two local coordination files when they help future agents continue the task:
+
+1. When continuing an existing task, first check whether `plan.md` and `implementation-journal.md` exist. If they do, read `plan.md` first, then `implementation-journal.md`.
+2. If no plan exists and the task is substantial, create `plan.md` for the macro plan, intended behavior, important boundaries, validation gates, and testing approach.
+3. After the user accepts `plan.md`, do not edit it without user permission.
+4. Write checkpoint notes, verification results, surprises, and deviations from the plan in `implementation-journal.md`.
+5. When you deviate, record what changed and why in `implementation-journal.md`.
+6. At the end of a completed task, briefly ask whether to delete either local note or archive/summarize anything useful for observability. Keep cleanup simple.
+7. Do not commit or push these local working notes. When practical, add them to `.git/info/exclude` rather than the repo's `.gitignore`.
 
 ## When to relax the defaults
 
