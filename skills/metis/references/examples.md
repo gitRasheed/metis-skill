@@ -498,6 +498,7 @@ Remove:
 - temporary tests that only prove the implementation you just wrote
 - broad docs created because the agent wanted to summarize itself
 - speculative interfaces, factories, or strategy layers
+- duplicated null/None checks that restate upstream validation or type guarantees
 - defensive checks that are abnormal for the surrounding code path
 - comments that restate function names or obvious control flow
 

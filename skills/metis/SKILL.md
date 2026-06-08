@@ -9,7 +9,7 @@ Write code in a style that favors plain data, pure logic, clear call sites, and 
 
 Treat these as strong defaults, not rigid laws. Follow the surrounding codebase, framework constraints, and language norms when they clearly matter more than stylistic purity.
 
-## Core workflow
+## Macro programming philosophy
 
 1. Start from the call site.
    Sketch the top-level usage first. Let the desired calling code shape helper names, signatures, and boundaries.
@@ -32,11 +32,16 @@ Treat these as strong defaults, not rigid laws. Follow the surrounding codebase,
 7. Prefer explicit, behavior-focused tests.
    When practical, write tests that are direct and easy to inspect. Avoid unnecessary indirection, loops, or branching in tests when that would hide intent or make failures harder to read.
 
-8. Define expected behavior before locking in the implementation.
+8. Think about performance before implementation details.
+   Sanity-check the likely bottleneck first: network, disk, memory, then CPU. Prefer architecture changes over late micro-optimizations.
+
+## LLM agent process
+
+1. Define expected behavior before locking in the implementation.
    Because you are an LLM, prefer to state the intended behavior before writing the implementation. When appropriate, write a local behavior check first: usually an integration test, macro behavior test, contract, acceptance check, or top-level usage sketch. Then let the implementation conform to that behavior. Do not treat tests as a post hoc justification step after the code already exists. Do not force strict TDD when the design is still moving quickly, but do prefer behavior-first development when it reduces ambiguity.
 
-9. Think about performance before implementation details.
-   Sanity-check the likely bottleneck first: network, disk, memory, then CPU. Prefer architecture changes over late micro-optimizations.
+2. Trace invariants before adding defensive checks.
+   Before adding null/None checks, fallback branches, or worst-case guards, inspect upstream producers and downstream consumers. If a parser, type, boundary check, or earlier invariant already guarantees the value, do not duplicate that check locally. Add a check when data crosses a trust boundary, the invariant can drift, or the local contract needs to make the assumption explicit.
 
 ## Working rules
 
@@ -247,7 +252,7 @@ Before claiming the task is done, committing, or pushing:
 1. Re-read the user request and confirm the implementation matches the intended behavior.
 2. Run the relevant local checks, tests, build, or executable validation gate. If no useful check exists, say so explicitly.
 3. Read the command output before claiming success. Do not treat a started command as a passed command.
-4. Review the diff for AI slop: unnecessary comments, abnormal defensive code, speculative abstractions, broad rewrites, casts that dodge type errors, and test or documentation spam.
+4. Review the diff for AI slop: unnecessary comments, duplicated null checks, abnormal defensive code, speculative abstractions, broad rewrites, casts that dodge type errors, and test or documentation spam.
 5. Keep only tests and docs that earn their place in the repository. Remove local scaffolding that helped you think but does not protect stable behavior.
 
 ## Long-running sessions

@@ -18,7 +18,7 @@ Use the same rubric for baseline and Metis outputs. Prefer judging concrete beha
 6. **Simple control flow**: Keeps high-level branching visible and leaf functions narrow.
 7. **Behavior-focused testing**: Prefers integration, macro behavior, contract, or acceptance checks over low-value unit tests.
 8. **Anti-gaming test discipline**: Avoids changing tests just to pass; treats weak generated tests as temporary scaffolding.
-9. **Anti-slop hygiene**: Avoids unnecessary comments, docs, defensive wrappers, broad rewrites, and style-inconsistent code.
+9. **Anti-slop hygiene**: Avoids unnecessary comments, duplicated null checks, docs, defensive wrappers, broad rewrites, and style-inconsistent code.
 10. **Final verification**: Names concrete checks run or needed before claiming completion; does not claim success without evidence.
 
 ## Pairwise Verdict
