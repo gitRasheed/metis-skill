@@ -116,7 +116,7 @@ Tests are code: minimize test logic to minimize test bugs.
 
 ## Code review mode
 
-Use this when reviewing a diff, PR, or another agent's work. Do not check every rule in one read; make several passes over the diff, each asking one question.
+Use this when reviewing a diff, PR, or another agent's work. Do not check every rule in one read; make several passes over the diff, each asking one question. Load `../../../skills/metis/references/review-examples.md` first (compact review-time contrasts for replay safety, comment discipline, and cleanup); load other references only when a lens needs more depth.
 
 Lens passes, in order:
 
@@ -129,6 +129,7 @@ Findings:
 
 - Verify before reporting. Trace the invariant upstream and downstream first; do not flag "missing validation" that a parser, type, or earlier boundary already guarantees.
 - Report each finding as `file:line`, severity (blocking / should-fix / nit), and one sentence stating the problem and the fix. No essays.
+- Tag each finding with the lens or rule that produced it, e.g. `[lens 2: data and state]` or `[rule: trace invariants]`. Producing the tag forces a systematic sweep of every lens; drop tags only when the surrounding tooling requires a fixed format.
 - Quality findings from lenses 2–4 are not padding. Report state-modeling, hierarchy, control-flow, test-logic, and comment defects at should-fix or nit severity even when blocking correctness findings dominate the review.
 
 Sub-agent fan-out, only when both hold: a sub-agent or task tool exists in your environment, and the diff is large (roughly more than 400 changed lines or 8 files):
@@ -170,3 +171,4 @@ Relax when the codebase has a strong local convention that would be expensive to
 - For testing style and tradeoffs (review lens 4): `../../../skills/metis/references/testing.md`
 - For boundary assertions and performance framing (review lens 1): `../../../skills/metis/references/performance-and-safety.md`
 - For optional concrete do/don't examples when the task is complex or ambiguous: `../../../skills/metis/references/examples.md`
+- For compact review-time contrasts when reviewing a diff or PR: `../../../skills/metis/references/review-examples.md`
