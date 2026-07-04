@@ -11,6 +11,7 @@ Metis is a coding skill for LLMs that improves engineering judgment during imple
 - behavior-focused testing
 - early performance thinking
 - sparse, useful comments instead of code narration
+- tiered code review: sequential lens passes by default, sub-agent fan-out for large diffs
 
 These are defaults, not laws. Metis is opinionated, but it should improve the local codebase, not fight it.
 
@@ -51,7 +52,7 @@ Use /metis to implement this feature.
 
 ## What is in this repo
 
-- `skills/metis/` is the main skill
-- `.claude/skills/metis/` is the Claude Code version
+- `skills/metis/` is the main skill and the canonical copy
+- `.claude/skills/metis/` mirrors it for Claude Code with adjusted reference paths; when editing the skill, regenerate it with `sed 's|\`references/|\`../../../skills/metis/references/|g' skills/metis/SKILL.md > .claude/skills/metis/SKILL.md`
 - `PORTABLE_PROMPT.md` is the plain markdown version for tools that do not support skills directly
 - `evals/` contains isolated baseline-vs-Metis eval cases and a local runner; raw eval runs stay git-excluded
