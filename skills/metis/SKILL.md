@@ -129,6 +129,7 @@ Findings:
 
 - Verify before reporting. Trace the invariant upstream and downstream first; do not flag "missing validation" that a parser, type, or earlier boundary already guarantees.
 - Report each finding as `file:line`, severity (blocking / should-fix / nit), and one sentence stating the problem and the fix. No essays.
+- Quality findings from lenses 2–4 are not padding. Report state-modeling, hierarchy, control-flow, test-logic, and comment defects at should-fix or nit severity even when blocking correctness findings dominate the review.
 
 Sub-agent fan-out, only when both hold: a sub-agent or task tool exists in your environment, and the diff is large (roughly more than 400 changed lines or 8 files):
 

@@ -41,6 +41,10 @@ Ground-truth seeded defects. Score recall and precision objectively:
   kind first (ifs up, fors down), which also enables batch handling.
 - S5 `providers.py` (described in context) — `ProviderStrategyFactory` registry for
   exactly one provider; speculative abstraction, replace with a direct call.
+- S6 `models.py:26-33,36-45` — `RefundEventRecord` inherits `persist()`, so refund
+  ledger rows are written as positive amounts indistinguishable from charges; persist
+  a signed amount or a kind column. (Unseeded; discovered by metis conditions in the
+  2026-07-04 run and confirmed real. Max score is now 15.5.)
 
 ## Nits
 
