@@ -29,6 +29,16 @@ penalize one-step severity disagreements. Max 14.5.
   ever further and growing unboundedly) and `self.stats` compounds; per-run state
   must be local to `run()`.
 
+Defects below marked (unseeded) were authoring artifacts discovered by reviewers in
+the 2026-07-04 first run; they are real in the shown code and now count as ground
+truth. Max score is therefore 19.5, not 14.5.
+
+- B5 (unseeded) `source.py:26` — `fetch_changed` calls `self._to_item(r)` but no
+  `_to_item` exists in the shown class; the adapter crashes before returning rows.
+- B6 (unseeded) `source.py:33` — the adapter is registered at import time with
+  `replica_conn=None`, so any real sync crashes on `None.execute`; wiring must
+  happen after configuration.
+
 ## Should-fix
 
 - S1 `engine.py:46` — `time.sleep(0.05)` per item inside the loop (~25s per
@@ -45,6 +55,10 @@ penalize one-step severity disagreements. Max 14.5.
   log; partition by kind first and make unknown kinds visible.
 - S5 `scheduler.py:15-16` — `except Exception: pass` swallows every sync failure
   invisibly; log with context and surface repeated failures.
+
+- S6 (unseeded) `engine.py:20,51-54` — when `sync_state` has no row the code falls
+  back to the epoch watermark but the final `UPDATE` matches zero rows, so the
+  watermark is never persisted and every run restarts from 1970; upsert the row.
 
 ## Nits
 
