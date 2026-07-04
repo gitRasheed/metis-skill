@@ -15,6 +15,32 @@ Metis is a coding skill for LLMs that improves engineering judgment during imple
 
 These are defaults, not laws. Metis is opinionated, but it should improve the local codebase, not fight it.
 
+## Measured results
+
+Metis is eval-driven: every non-trivial rule was validated or discovered through
+isolated baseline-vs-Metis runs (Codex `gpt-5.5`, xhigh reasoning, clean sandboxed
+home, 60+ runs). Highlights from the 2026-07 eval round:
+
+- **Code review, seeded ground truth** (`evals/cases-v4/`): PR-review cases with
+  known planted defects, scored on objective recall and precision. Metis found
+  **~60% more defect value than baseline** on the tuned case (11.3 vs 7.0 avg,
+  max 15.5) and **+53% on a held-out case in a different domain** (12.7 vs 8.3,
+  max 19.5), winning or tying every rep.
+- **Zero false positives in 39 consecutive review runs** across all conditions —
+  the verify-before-reporting rule holds under pressure.
+- **Five real unplanted bugs discovered** by Metis conditions across the two review
+  cases (e.g. refund ledger rows indistinguishable from charges; an event marked
+  processed before its transaction commits). Baseline found one.
+- **Design cases** (`evals/cases-v3/`): Metis beat or tied baseline in 9/9
+  case-reps; its one reproducible defect (applying batch elements before
+  whole-batch classification) became design principle 10, which flipped that
+  failure from 1/3 correct to 3/3 on reruns.
+- Changes that failed their A/B (e.g. a mandatory per-lens ledger) were rejected,
+  not shipped.
+
+Methodology, rubrics, and per-run scoring live in `evals/`; raw run output stays
+git-excluded.
+
 ## Install
 
 Install from GitHub with:
