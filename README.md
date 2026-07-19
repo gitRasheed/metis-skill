@@ -30,21 +30,13 @@ npx skills add https://github.com/gitRasheed/metis-skill --skill metis -g -a cod
 npx skills add https://github.com/gitRasheed/metis-skill --skill metis -g -a claude-code
 ```
 
-If symlinks are blocked on Windows, add `--copy`.
-
-```bash
-npx skills add https://github.com/gitRasheed/metis-skill --skill metis -g -a codex --copy
-```
-
 ## Update
-
-Skill installs are pull-based, so nothing notifies you of new versions. Run:
 
 ```bash
 npx skills update -g
 ```
 
-or watch this repo's [releases](https://github.com/gitRasheed/metis-skill/releases). `CHANGELOG.md` lists what changed in each version.
+`CHANGELOG.md` lists what changed.
 
 ## Use
 
@@ -67,6 +59,6 @@ The current round (`evals/cases-v5/`) ran sixteen skill-text permutations throug
 ## What is in this repo
 
 - `skills/metis/` is the canonical skill
-- `.claude/skills/metis/` mirrors it for Claude Code; regenerate after skill edits with `sed 's|\`references/|\`../../../skills/metis/references/|g' skills/metis/SKILL.md > .claude/skills/metis/SKILL.md`
+- `.claude/skills/metis/` mirrors it for Claude Code
 - `PORTABLE_PROMPT.md` is the plain-markdown version for tools without skill support
 - `evals/` holds the eval cases, scoring keys, and reports; raw run output stays git-excluded
