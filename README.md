@@ -90,6 +90,18 @@ If symlinks are blocked on Windows, add `--copy`.
 npx skills add https://github.com/gitRasheed/metis-skill --skill metis -g -a codex --copy
 ```
 
+## Update
+
+Skill installs are pull-based — nothing notifies you of new versions. To get
+updates, either run:
+
+```bash
+npx skills update -g
+```
+
+or watch this repo's [GitHub releases](https://github.com/gitRasheed/metis-skill/releases)
+(each version ships as a tagged release with notes; see also `CHANGELOG.md`).
+
 ## Use
 
 Metis is meant to auto-load for relevant coding work.
