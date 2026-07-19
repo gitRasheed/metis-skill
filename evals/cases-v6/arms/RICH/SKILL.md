@@ -23,7 +23,7 @@ Apply sections by phase instead of holding everything at once:
 3. Choose the simplest state model that matches reality: discriminated unions for mutually exclusive states, composable data for orthogonal features, and a plain flat record when neither pressure exists — do not over-architect the simple case. Core domain state gets a named, typed shape — a dataclass, struct, or union — while raw dicts and strings stay at the boundary, not in the core.
 4. Isolate mutation and I/O near the edges. Orchestration decides what happens; inner helpers do narrow, understandable work.
 5. Push ifs up, fors down. Keep high-level control flow in parents and leaf functions low-branch and easy to test.
-6. Parse, don't validate: at each trust boundary — parsing, persistence, external APIs — convert untrusted data once into a typed shape that cannot represent the invalid states, so downstream code never re-checks it. Past the boundary, assert internal invariants whose failure means a programming error: state transitions, function contracts, positive and negative space.
+6. Assert at boundaries, both where data enters and where it leaves: parsing, persistence, external APIs, state transitions, and function contracts. Check what must be true and, when useful, what must not be.
 7. Prefer explicit, behavior-focused tests without indirection that hides intent.
 8. Sanity-check the likely bottleneck first — network, disk, memory, then CPU. Prefer architecture changes over late micro-optimizations.
 9. Design for the hardest real requirement first, then simplify downward. Do not architect for the easy case and try to scale it up later.
@@ -34,7 +34,7 @@ Apply sections by phase instead of holding everything at once:
 ## LLM agent process
 
 1. Define expected behavior before locking in the implementation. When appropriate, write a local behavior check first — an integration test, macro behavior test, contract, acceptance check, or top-level usage sketch — and let the implementation conform to it. Do not treat tests as post hoc justification. Do not force strict TDD while the design is still moving, but prefer behavior-first when it reduces ambiguity.
-2. Trace invariants before adding defensive checks: if a parser, type, or earlier boundary already guarantees the value, another check is a bug of its own. Add one only where data crosses a trust boundary, the invariant can drift, or the contract should be explicit.
+2. Trace invariants before adding defensive checks. Before adding null/None checks, fallback branches, or worst-case guards, inspect upstream producers and downstream consumers. If a parser, type, or earlier boundary already guarantees the value, do not duplicate the check. Add one when data crosses a trust boundary, the invariant can drift, or the contract should be explicit.
 3. Distinguish essential from accidental complexity. Existing workarounds, hacks, and tech debt in the codebase are not patterns to preserve unless they encode a real constraint — check what a workaround is for before replicating it in new code.
 4. Detect thrash and re-derive. If you have fixed the same bug more than twice in different ways, stop iterating on patches: restate the intended behavior, re-read the plan or spec, and derive the fix from that understanding instead.
 5. Reuse before you invent. Before writing a new helper, type, or constant, search the codebase for an existing one that already does the job; call or extend it instead of creating a near-duplicate.
@@ -74,7 +74,7 @@ SOLID is not an excuse for class hierarchies, factories, or ceremony. Prefer the
 
 ## Pattern cues
 
-Full do/don't code for each cue lives in `../../../skills/metis/references/examples.md`; read it when the task is complex or ambiguous.
+Full do/don't code for each cue lives in `references/examples.md`; read it when the task is complex or ambiguous.
 
 - Call-site-first: write `register_user()` the way you wish it read, then implement `parse_signup_form()`, `ensure_email_available()`, and `save_user()` to match — never shape the caller around helper internals.
 - Plain data plus systems: `Trade` as a dataclass with `validate_trade()` / `price_trade()` / `execute_trade()`, not a `Trade -> OptionTrade -> CoveredCallTrade` hierarchy where one feature touches many classes.
@@ -129,7 +129,7 @@ Tests are code: minimize test logic to minimize test bugs.
 
 ## Code review mode
 
-Use this when reviewing a diff, PR, or another agent's work. For a small diff, combine the lenses below into one careful pass; when the diff is large or complex, make several passes, each asking one lens's question — do not check every rule in one read. Load `../../../skills/metis/references/review-examples.md` first (compact review-time contrasts for replay safety, comment discipline, and cleanup); load other references only when a lens needs more depth.
+Use this when reviewing a diff, PR, or another agent's work. For a small diff, combine the lenses below into one careful pass; when the diff is large or complex, make several passes, each asking one lens's question — do not check every rule in one read. Load `references/review-examples.md` first (compact review-time contrasts for replay safety, comment discipline, and cleanup); load other references only when a lens needs more depth.
 
 Lens passes, in order:
 
@@ -179,9 +179,9 @@ Relax when the codebase has a strong local convention that would be expensive to
 
 ## Read these references when needed
 
-- For plain-data architecture, unions, and system boundaries (review lens 2): `../../../skills/metis/references/architecture.md`
-- For call-site-first API design (review lens 3): `../../../skills/metis/references/api-design.md`
-- For testing style and tradeoffs (review lens 4): `../../../skills/metis/references/testing.md`
-- For boundary assertions and performance framing (review lens 1): `../../../skills/metis/references/performance-and-safety.md`
-- For optional concrete do/don't examples when the task is complex or ambiguous: `../../../skills/metis/references/examples.md`
-- For compact review-time contrasts when reviewing a diff or PR: `../../../skills/metis/references/review-examples.md`
+- For plain-data architecture, unions, and system boundaries (review lens 2): `references/architecture.md`
+- For call-site-first API design (review lens 3): `references/api-design.md`
+- For testing style and tradeoffs (review lens 4): `references/testing.md`
+- For boundary assertions and performance framing (review lens 1): `references/performance-and-safety.md`
+- For optional concrete do/don't examples when the task is complex or ambiguous: `references/examples.md`
+- For compact review-time contrasts when reviewing a diff or PR: `references/review-examples.md`

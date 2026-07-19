@@ -54,7 +54,7 @@ Use /metis to implement this feature.
 
 Every non-trivial rule in the skill was validated or discovered through isolated baseline-vs-Metis runs, and changes that failed their A/B were rejected rather than shipped.
 
-The current round (`evals/cases-v5/`) ran sixteen skill-text permutations through a five-case suite under preregistered ship rules, with blinded pairwise quality judging and about ninety hand-scored runs. The shipped text won 7 of 10 blinded quality comparisons against its predecessor and regressed on nothing. `evals/cases-v5/FINAL-REPORT.md` has the full record; earlier rounds live in `evals/cases-v3/` and `evals/cases-v4/`.
+The latest round (`evals/cases-v6/`) ran two preregistered waves over six skill texts, scored reviews with per-transcript sub-agents adjudicated by hand, and added an external leg on the Aider polyglot benchmark: every arm passed all 72 test runs, and a blinded judge still preferred Metis-guided code 3:1 over the no-skill baseline. The winner shipped as v1.3.0. `evals/cases-v6/REPORT.md` has the full record; earlier rounds live in `evals/cases-v3/` through `evals/cases-v5/`.
 
 ## What is in this repo
 

@@ -10,14 +10,18 @@ Use this guidance when implementing, refactoring, or reviewing code:
 - Existing workarounds and tech debt are not patterns to preserve unless they encode a real constraint; check what a workaround is for before replicating it.
 - If you have fixed the same bug more than twice in different ways, stop iterating on patches: restate the intended behavior and re-derive the fix from the plan or spec.
 - Use discriminated unions or tagged variants for mutually exclusive states.
+- Give core domain state a named, typed shape (dataclass, struct, union); raw dicts and strings belong at the boundary, not in the core.
+- Prefer deep modules: a simple interface over substantial functionality. If a helper's interface is nearly as complex as what it hides, inline it or deepen it.
 - Use composition when features combine orthogonally.
 - Keep mutation and I/O near the edges.
 - Push high-level branching upward and keep leaf functions narrow and easy to inspect.
-- Add validation and assertions at trust boundaries such as parsing, persistence, external API calls, and state transitions — both where data enters and where it leaves.
+- Parse, don't validate: at each trust boundary (parsing, persistence, external APIs) convert untrusted data once into a typed shape that cannot represent the invalid states, so downstream code never re-checks it. Past the boundary, assert internal invariants whose failure means a programming error — state transitions, function contracts, positive and negative space.
+- Define errors out of existence where a contract choice allows it: prefer operations that are naturally idempotent, ranges that clamp, and deletes that succeed when the target is already gone, over raising and forcing every caller to handle the case.
+- A side effect that crosses a boundary (a send, a charge, a write) needs a stable identity such as an idempotency key so retries and replays are safe.
 - Design for the hardest real requirement first, then simplify downward; do not architect for the easy case and try to scale it up later.
 - When elements of a batch can invalidate each other (duplicates, conflicts, cross-record constraints), classify the whole batch before applying any element, even when applying incrementally looks cleaner.
 - Before writing a new helper, type, or constant, search the codebase for an existing one that already does the job; call or extend it instead of creating a near-duplicate.
-- Before adding null/None checks, fallback branches, or worst-case guards, inspect upstream producers and downstream consumers. If the value is already guaranteed by a parser, type, boundary check, or earlier invariant, avoid duplicating the check locally.
+- Trace invariants before adding defensive checks: if a parser, type, or earlier boundary already guarantees the value, another check is a bug of its own. Add one only where data crosses a trust boundary, the invariant can drift, or the contract should be explicit.
 - Because you are an LLM, prefer to define expected behavior before writing the implementation. When appropriate, start from a local behavior check: usually an integration test, macro behavior test, contract, acceptance check, or usage sketch. Then implement around that behavior. Prefer TDD-like discipline when it reduces ambiguity, not as a rigid law.
 - When practical, use a red-green loop: start from a failing check, make the implementation pass it, then rerun the tests to confirm the behavior.
 - When implementing or fixing: for every requirement, write the failing behavior check first when a test harness exists — watch it fail, fix, watch it pass — and commit the check with the fix; a fix without a guarding test is half done. A small set of behavior-pinning tests beats a large redundant suite; assertion count is not a merit signal.

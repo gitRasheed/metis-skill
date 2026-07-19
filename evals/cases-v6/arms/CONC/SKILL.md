@@ -5,7 +5,6 @@ description: Use when an LLM is doing non-trivial coding work, including impleme
 
 # Metis
 
-
 Write code that favors plain data, pure logic, clear call sites, and early architectural thinking. These are strong defaults, not rigid laws: follow the surrounding codebase, framework constraints, and language norms when they clearly matter more.
 
 Apply sections by phase instead of holding everything at once:
@@ -20,7 +19,7 @@ Apply sections by phase instead of holding everything at once:
 
 1. Start from the call site, by wishful thinking: pretend the perfect helpers already exist, name them the way you would want to call them, and get the top-level usage reading cleanly. If the calling code reads awkwardly, the abstractions are wrong — and you find out before building anything.
 2. Prefer plain data plus focused functions, modules, or systems over behavior-heavy objects. Draw boundaries around what systems do, not what entities are.
-3. Choose the simplest state model that matches reality: discriminated unions for mutually exclusive states, composable data for orthogonal features, and a plain flat record when neither pressure exists — do not over-architect the simple case. Core domain state gets a named, typed shape — a dataclass, struct, or union — while raw dicts and strings stay at the boundary, not in the core.
+3. Choose the simplest state model that matches reality: discriminated unions for mutually exclusive states, composable data for orthogonal features, and a plain flat record when neither pressure exists — do not over-architect the simple case.
 4. Isolate mutation and I/O near the edges. Orchestration decides what happens; inner helpers do narrow, understandable work.
 5. Push ifs up, fors down. Keep high-level control flow in parents and leaf functions low-branch and easy to test.
 6. Parse, don't validate: at each trust boundary — parsing, persistence, external APIs — convert untrusted data once into a typed shape that cannot represent the invalid states, so downstream code never re-checks it. Past the boundary, assert internal invariants whose failure means a programming error: state transitions, function contracts, positive and negative space.
@@ -28,8 +27,6 @@ Apply sections by phase instead of holding everything at once:
 8. Sanity-check the likely bottleneck first — network, disk, memory, then CPU. Prefer architecture changes over late micro-optimizations.
 9. Design for the hardest real requirement first, then simplify downward. Do not architect for the easy case and try to scale it up later.
 10. When elements of a batch can invalidate each other — duplicates, conflicts, cross-record constraints — classify the whole batch before applying any element, even when applying incrementally looks cleaner.
-11. Define errors out of existence: when a contract choice can make a failure case impossible — an operation that is naturally idempotent, a range that clamps, a delete that succeeds when the target is already gone — prefer it over raising and forcing every caller to handle the case.
-12. A side effect that crosses a boundary — a send, a charge, a write — needs a stable identity (idempotency key, dedupe token) so retries and replays are safe.
 
 ## LLM agent process
 
@@ -52,10 +49,7 @@ Apply sections by phase instead of holding everything at once:
 - Prefer pure functions; introduce mutation when it clearly improves correctness, interoperability, or performance.
 - Prefer data transformations over deep object hierarchies.
 - Prefer small, explicit abstractions that read well at the call site, and code that is easy to verify by reading.
-- Prefer deep modules: a simple interface over substantial functionality. If a helper's interface is nearly as complex as what it hides, inline it or deepen it.
-- Keep invariants close to the operation that depends on them; do not validate early and rely on it much later if the data can drift.
 - Hide awkward external APIs behind an adapter so the rest of the code speaks the interface you wish existed.
-- Prefer boundary validation over trusting implicit assumptions.
 - Prefer self-explaining code with clear, not bloated, names. Comments explain why — a non-obvious invariant, tradeoff, or reason for an unusual approach — never what the code already says. Default to no comment; when one is needed, keep it to one line unless it documents genuinely complex behavior.
 - Remove AI-slop comments and style inconsistent with the surrounding file.
 - Adapt to the existing team style instead of forcing this skill mechanically into every file.
@@ -74,7 +68,7 @@ SOLID is not an excuse for class hierarchies, factories, or ceremony. Prefer the
 
 ## Pattern cues
 
-Full do/don't code for each cue lives in `../../../skills/metis/references/examples.md`; read it when the task is complex or ambiguous.
+Full do/don't code for each cue lives in `references/examples.md`; read it when the task is complex or ambiguous.
 
 - Call-site-first: write `register_user()` the way you wish it read, then implement `parse_signup_form()`, `ensure_email_available()`, and `save_user()` to match — never shape the caller around helper internals.
 - Plain data plus systems: `Trade` as a dataclass with `validate_trade()` / `price_trade()` / `execute_trade()`, not a `Trade -> OptionTrade -> CoveredCallTrade` hierarchy where one feature touches many classes.
@@ -129,11 +123,11 @@ Tests are code: minimize test logic to minimize test bugs.
 
 ## Code review mode
 
-Use this when reviewing a diff, PR, or another agent's work. For a small diff, combine the lenses below into one careful pass; when the diff is large or complex, make several passes, each asking one lens's question — do not check every rule in one read. Load `../../../skills/metis/references/review-examples.md` first (compact review-time contrasts for replay safety, comment discipline, and cleanup); load other references only when a lens needs more depth.
+Use this when reviewing a diff, PR, or another agent's work. For a small diff, combine the lenses below into one careful pass; when the diff is large or complex, make several passes, each asking one lens's question — do not check every rule in one read. Load `references/review-examples.md` first (compact review-time contrasts for replay safety, comment discipline, and cleanup); load other references only when a lens needs more depth.
 
 Lens passes, in order:
 
-1. Correctness and contracts — does the change do what it claims; do all variants honor the advertised contract (L); are assertions present where data crosses trust boundaries; are failure paths handled. Distinguish validation of untrusted data at a trust boundary from assertions of internal invariants whose failure means a programming error: missing internal-invariant protection on state transitions and cross-record contracts is report-worthy substance, while validation that duplicates what a parser, type, or earlier boundary already guarantees is noise.
+1. Correctness and contracts — does the change do what it claims; do all variants honor the advertised contract (L); are failure paths handled. Distinguish parsing from asserting: missing internal invariants on state transitions and cross-record contracts are report-worthy substance; re-checking what a parser, type, or earlier boundary already guarantees is noise.
 2. Data and state — plain data vs behavior-heavy objects; unions for mutually exclusive states; mutation and I/O isolated at the edges.
 3. Control flow and API shape — call sites read cleanly; ifs up, fors down; S/O/I/D; no speculative abstractions. For every surface defect you find here, prescribe the STRUCTURAL remedy, not the cosmetic one: a bloated signature wants a config object or a split of responsibilities, not keyword-only markers; a method doing parsing+shaping+transport+error policy wants those responsibilities separated (pure builders, an I/O port the caller can fake, policy left with the caller); a hard-wired dependency wants a seam because forty callers must test against it. Name the new shape concretely.
 4. Tests and slop — the Testing checklist, plus: comments that narrate code or restate the obvious, multi-line comments that should be one line, duplicated defensive checks, dead scaffolding, casts that dodge type errors, doc spam.
@@ -179,9 +173,9 @@ Relax when the codebase has a strong local convention that would be expensive to
 
 ## Read these references when needed
 
-- For plain-data architecture, unions, and system boundaries (review lens 2): `../../../skills/metis/references/architecture.md`
-- For call-site-first API design (review lens 3): `../../../skills/metis/references/api-design.md`
-- For testing style and tradeoffs (review lens 4): `../../../skills/metis/references/testing.md`
-- For boundary assertions and performance framing (review lens 1): `../../../skills/metis/references/performance-and-safety.md`
-- For optional concrete do/don't examples when the task is complex or ambiguous: `../../../skills/metis/references/examples.md`
-- For compact review-time contrasts when reviewing a diff or PR: `../../../skills/metis/references/review-examples.md`
+- For plain-data architecture, unions, and system boundaries (review lens 2): `references/architecture.md`
+- For call-site-first API design (review lens 3): `references/api-design.md`
+- For testing style and tradeoffs (review lens 4): `references/testing.md`
+- For boundary assertions and performance framing (review lens 1): `references/performance-and-safety.md`
+- For optional concrete do/don't examples when the task is complex or ambiguous: `references/examples.md`
+- For compact review-time contrasts when reviewing a diff or PR: `references/review-examples.md`
