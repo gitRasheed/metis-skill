@@ -16,6 +16,7 @@ Use this guidance when implementing, refactoring, or reviewing code:
 - Add validation and assertions at trust boundaries such as parsing, persistence, external API calls, and state transitions — both where data enters and where it leaves.
 - Design for the hardest real requirement first, then simplify downward; do not architect for the easy case and try to scale it up later.
 - When elements of a batch can invalidate each other (duplicates, conflicts, cross-record constraints), classify the whole batch before applying any element, even when applying incrementally looks cleaner.
+- Before writing a new helper, type, or constant, search the codebase for an existing one that already does the job; call or extend it instead of creating a near-duplicate.
 - Before adding null/None checks, fallback branches, or worst-case guards, inspect upstream producers and downstream consumers. If the value is already guaranteed by a parser, type, boundary check, or earlier invariant, avoid duplicating the check locally.
 - Because you are an LLM, prefer to define expected behavior before writing the implementation. When appropriate, start from a local behavior check: usually an integration test, macro behavior test, contract, acceptance check, or usage sketch. Then implement around that behavior. Prefer TDD-like discipline when it reduces ambiguity, not as a rigid law.
 - When practical, use a red-green loop: start from a failing check, make the implementation pass it, then rerun the tests to confirm the behavior.

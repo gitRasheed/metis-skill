@@ -22,6 +22,9 @@ full report lives in `evals/cases-v5/`). The skill diff against v1.1.0 is
   produce no findings.
 - The Claude Code mirror and `PORTABLE_PROMPT.md` were regenerated to
   match.
+- Post-release addition to the agent-process rules: search the codebase
+  for an existing helper before writing a new one. Added by owner
+  direction after the campaign's gates; it gets its A/B next round.
 
 ## v1.1.0 (2026-07-04)
 

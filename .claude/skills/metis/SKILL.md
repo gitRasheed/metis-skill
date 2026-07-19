@@ -35,6 +35,7 @@ Apply sections by phase instead of holding everything at once:
 2. Trace invariants before adding defensive checks. Before adding null/None checks, fallback branches, or worst-case guards, inspect upstream producers and downstream consumers. If a parser, type, or earlier boundary already guarantees the value, do not duplicate the check. Add one when data crosses a trust boundary, the invariant can drift, or the contract should be explicit.
 3. Distinguish essential from accidental complexity. Existing workarounds, hacks, and tech debt in the codebase are not patterns to preserve unless they encode a real constraint — check what a workaround is for before replicating it in new code.
 4. Detect thrash and re-derive. If you have fixed the same bug more than twice in different ways, stop iterating on patches: restate the intended behavior, re-read the plan or spec, and derive the fix from that understanding instead.
+5. Reuse before you invent. Before writing a new helper, type, or constant, search the codebase for an existing one that already does the job; call or extend it instead of creating a near-duplicate.
 
 ## Implementation rules (when implementing or fixing)
 
