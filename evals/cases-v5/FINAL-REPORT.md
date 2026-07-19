@@ -1,388 +1,398 @@
-# Metis skill-permutation campaign — final report
+# Skill-permutation campaign, final report
 
-Date: 2026-07-19. Model under test: gpt-5.6-sol (codex exec, high effort,
-priority tier). Scorer: Claude (hand-scored against frozen keys); pairwise
-quality judge: gpt-5.6-sol, blinded + order-randomized, anonymized diffs.
-All scores re-derivable from `rescore-v1.3.md`, `rescore-suite.md`, and
-`implementation-journal.md`.
+2026-07-19. Model under test: gpt-5.6-sol via codex exec, high reasoning
+effort. Adversarial critiques and case authoring ran at xhigh. Claude
+hand-scored every review transcript against frozen keys; a second
+gpt-5.6-sol instance judged code quality on blinded, order-randomized,
+anonymized diff pairs. Every score in this report can be re-derived from
+`rescore-v1.3.md`, `rescore-suite.md`, and `rescore-holdout.md`.
 
-## 1. Verdict
+The campaign asked which exact skill text is best, ran sixteen candidates
+through a five-case suite under preregistered rules, and shipped the
+winner (P15) as Metis v1.2.0. This document is the full record: the
+suite, the numbers, what got refused and why, and the mechanism that
+explains the results.
 
-**Ship candidate: P15-lensscoped — the only text of sixteen to clear the
-full preregistered gate path** (see §9 for the bisect that produced it).
-P15's record: bgjobs review **21.5/21.5 zero-variance** (above current's
-20.83); torefall 17/17 + 19/19 both reps with pairwise 1–1 at ratings
-9/8 (the strongest candidate pair recorded); holdout **16.0 > current
-15.25** on the case no tuning ever touched. Its construction is the
-campaign's mechanism finding made concrete: implementer-held text
-identical to the pairwise-sweeping P14a, review lift carried by one
-sentence scoped inside review lens 1.
+## 1. Outcome
 
-The path there mattered: the earlier full-wave round ended with the rule
-correctly REFUSING both prior candidates — P13 (review-optimal, lost tf2
-0–2 with +325 extension cost) and P10 (agentic-optimal, failed the
-controller clause) — before the four-arm bisect isolated placement as
-the interference mechanism and synthesized P15. Disclosed limits on the
-P15 recommendation: controller gates untested for P15 (that clause was
-noise-bound at n=2 for every condition), pairwise and holdout at n=2;
-promotion remains the owner's call. Candidate diffs vs
-`skills/metis/SKILL.md` (174 lines):
+P15 is now `skills/metis/SKILL.md`. The diff against v1.1.0 is 14
+insertions and 5 deletions on a 174-line file: a new implementation-rules
+section, a structural-remedy prescription in review lens 3, and three
+review-scoped sentences (small diffs get one combined pass, lens 1
+weighs invariant gaps over duplicate validation, a lens may produce no
+findings).
 
-- **P15-production: +14 / −5 (the ship candidate)**
+P15 was the only candidate of sixteen to pass every preregistered gate.
+Two texts that looked stronger on single measures were refused by the
+rules: P13 had the best review scores of the campaign but lost the
+torefall quality pairwise 0-2 with the worst extension cost, and P10 won
+the agentic arena but failed the controller clause. A four-arm bisect of
+their difference then isolated the cause and produced P15. A high-n
+confirmation round (section 10) ran before promotion.
 
-- P10-production: **+10 / −2**
-- P13-production: **+24 / −16** (the extra 14/14 are pure wording edits
-  from the critique adjudication; zero mechanism changes vs P10)
+Diff sizes for the other finalists, measured the same way: P10 +10/-2,
+P13 +24/-16.
 
-## 2. The golden eval set (4 cases, all adversarially critiqued at xhigh)
+## 2. The suite
 
-| case | type | discriminator | status |
+| case | type | discriminator | calibration |
 |---|---|---|---|
-| api-evolution-review | review | key v1.3, max 20.5, atomic-cause credit | READY |
-| background-jobs-review | review | key v5.1.1 frozen, max 30 | READY |
-| torefall-v2 | agentic | verifier v2.1: 19 gates + stage-B extension cost + ratings-pairwise | VALIDATED (starter 6/19; two independent 19/19 existence proofs) |
-| charge-controller | agentic | verifier v2: 12 gates from pinned v2-spec | VALIDATED (starter 0/12; independent golden 12/12) |
+| api-evolution-review | review | key v1.3, max 20.5, atomic-cause credit | frozen after critique |
+| background-jobs-review | review | key v5.1.1, max 30, depth markers | frozen after critique |
+| torefall-v2 | agentic | 19 hidden gates, blinded pairwise, stage-B extension cost | starter 6/19, two independent 19/19 proofs |
+| charge-controller | agentic | 12 hidden gates from a pinned spec | starter 0/12, verified golden 12/12 |
+| catalog-sync (cases-v4) | holdout | key frozen before the campaign | never used for tuning |
 
-Retired: export-agentic (worst adversarial critique; lineage kept).
-Anti-leak: verifiers quarantined outside case repos, `__pycache__` scrub in
-every runner, scoring keys never enter eval workspaces.
+Every case went through xhigh adversarial critique before its key froze.
+A sixth case (export-agentic) was retired after the worst critique of the
+set. Leak controls: verifiers live outside the case repos, every runner
+scrubs `__pycache__`, and scoring keys never enter an eval workspace.
 
 ## 3. Review arena
 
-### api-evolution (key v1.3, max 20.5, uniform skill-file protocol)
+### api-evolution, uniform skill-file protocol (max 20.5)
 
 | condition | reps | mean | notes |
 |---|---|---|---|
-| P9-structural | 3 | **13.25** | zero variance; only condition finding A1-full + A2+S3 |
-| P11-gated | 3 | 12.08 | bimodal (13.25/10.25/12.75) — gating unreliable |
+| P9-structural | 3 | 13.25 | zero variance; only condition to find A1-full and the A2+S3 pair |
+| P11-gated | 3 | 12.08 | bimodal (13.25 / 10.25 / 12.75); gating is unreliable |
 | P8-agentic | 1 | 11.75 | |
-| P10-hybrid | 3 | 10.92 | impl-rules section dilutes review depth |
-| P12-modular | 3 | 10.83 | failed even with verified reference reads |
+| P10-hybrid | 3 | 10.92 | the implementation-rules section costs review depth |
+| P12-modular | 3 | 10.83 | failed even though transcripts show the reference files were read |
 | baseline | 1 | 10.00 | |
 | P1-condensed | 1 | 9.50 | |
-| current (text only) | 3* | 8.83 | r2/r3/r4: 11.0/8.0/7.5 |
+| current, text only | 3 | 8.83 | 11.0 / 8.0 / 7.5 |
 | P6-tiger | 1 | 8.00 | |
 
-*current-r1 13.5 ran protocol-privileged (references kit) — excluded from
-the uniform table, reported separately below.
+One early current-skill run (13.5) used the references kit while the
+permutations ran text-only, so it is excluded from this table and
+reported under the kit protocol below.
 
-### With the production references kit (deployment protocol)
-
-| condition | reps | mean | per-rep |
-|---|---|---|---|
-| current + kit | 1 | 13.50 | protocol-privileged r1 |
-| P10 + kit | 3 | 12.83 | |
-| P13 + kit | 3 | 12.17 | **14.5** (campaign max) / 11.75 / 10.25 |
-
-P13's r1 is the single best api transcript recorded (15 of 19 causes found
-at least partially, 11/11 findings credited, zero FP), but its variance is
-the widest. P13 ≈ P10 on this case; both sit below P9's zero-variance
-13.25.
-
-### background-jobs (key v5.1.1, max 30, kit protocol)
+### api-evolution, references-kit protocol (deployment configuration)
 
 | condition | reps | mean | per-rep |
 |---|---|---|---|
-| P13 + kit | 2 | **21.88** | **23.75** (campaign max) / 20.0 |
-| P9 + kit | 2 | 21.75 | 22.5 / 21.0 |
-| current + kit | 3 | 20.83 | 23.0 / 21.0 / 18.5 |
+| current | 3 | 12.42 | 13.5 / 12.5 / 11.25 |
+| P10 | 3 | 12.83 | |
+| P13 | 3 | 12.17 | 14.5 / 11.75 / 10.25 |
+| P15 | 3 | 12.67 | 14.75 / 9.75 / 13.5 |
+
+P15's first rep is the best api transcript of the campaign (14.75; the
+previous best was P13's 14.5), and its spread is also the widest. At
+n=3 per side the conditions are at parity on this case.
+
+### background-jobs, references-kit protocol (max 30)
+
+| condition | reps | mean | per-rep |
+|---|---|---|---|
+| P13 | 2 | 21.88 | 23.75 / 20.0 |
+| P9 | 2 | 21.75 | 22.5 / 21.0 |
+| current | 5 | 20.60 | 23.0 / 21.0 / 18.5 / 22.5 / 18.0 |
+| P15 | 5 | 20.50 | 21.5 / 21.5 / 16.5 / 22.5 / 20.5 |
 | baseline | 3 | 19.00 | 18.0 / 21.0 / 18.0 |
-| P10 + kit | 2 | 17.25 | 16.0 (one factual FP, −2) / 18.5 |
+| P10 | 2 | 17.25 | 16.0 (one factual false positive, -2) / 18.5 |
 
-P13 vs P10 ranges are DISJOINT ([20, 23.75] vs [16, 18.5]): the adopted
-critique wording recovers the review tax that P10's implementation-rules
-section imposed on this case. Cross-case review means (% of max):
-P9 68.6% ≈ current 67.7% ≈ **P13 66.2%** > P10 60.1% — and on the holdout
-(below) P13 leads outright.
+P10's implementation-rules section cost it review breadth here, and
+P13's wording pass recovered it (the two ranges do not overlap). At n=5
+per side, P15 and current are at parity. One recurring risk worth
+naming: a specific false positive (claiming `LIGHTWEIGHT_TYPES` is
+undefined when the prompt defines it) appeared in 3 of 9 runs across the
+P10 text family, including one P15 rep, and in none of the 5 current
+runs.
 
 ## 4. Agentic arena
 
-### torefall-v2 (gates saturate — discrimination is pairwise + extension cost)
+### torefall-v2
 
-| condition | gates v2.0 (17) | gates v2.1 (19) | pairwise vs current (rating) | stage-B extension (verifier-green) |
-|---|---|---|---|---|
-| current | 17/17 | 19/19 | anchor (7/7/8) | +208 lines |
-| P10-hybrid | 17/17 ×3 | 19/19 ×3 | **2–1 win** (8/8/7) | **+198 lines** |
-| P13-final | 17/17 ×2 | 19/19 ×2 | 0–2 loss (7/7) | +325 lines (19/19 green) |
-| P8-agentic | 17/17 | — | 1-rep win | — |
-| P9-structural | 17/17 | — | — | — |
-| P12-modular | 17/17 | — | loss (subclass tree returned) | — |
-| baseline | 17/17 | — | loss (0 committed tests) | +229 lines |
+Every condition saturated the behavioral gates, so this case
+discriminates through the blinded pairwise judgment and the stage-B
+extension probe (grow the codebase against a follow-on task, count the
+verifier-green diff).
 
-The baseline passes gates but writes zero committed tests and probes with
-throwaway scripts; skill conditions commit 10–16 behavior tests. The
-anti-assert-spam line channels effort: P10 diffs run 10–16 tests /
-50–56 asserts / 0 narrating comments, judged best-in-field.
-
-### charge-controller v2 (12 gates; cold calibration + head-to-head)
-
-| condition | gates (r1/r2) | mean | committed tests |
+| condition | gates (17 then 19) | pairwise vs current | stage-B extension |
 |---|---|---|---|
-| P13-final | 6 / 3 | **4.5** | 9–10 |
-| current | 1 / 6 | 3.5 | 6–10 |
-| baseline | 3 / 2 | 2.5 | **0** |
-| P10-hybrid | 1 / 1 | 1.0 | 6–8 |
+| current | pass | anchor, rated 7 to 9 | +208 lines |
+| P10 | pass, 3 reps | won 2-1 (rated 8/8/7) | +198 lines |
+| P15 | pass, 5 reps | won 3-2 (rated 9/8/9/7/8) | +254 lines |
+| P13 | pass, 2 reps | lost 0-2 (rated 7/7) | +325 lines |
+| P8 | pass | won its single pair | |
+| P12 | pass | lost (its diff rebuilt the subclass tree) | |
+| baseline | pass | lost (committed zero tests) | +229 lines |
 
-Reference points: starter 0/12, assessor golden 12/12. Unlike torefall,
-gates here are FAR from ceiling and rep variance is large (current spans
-1–6), so condition means at n=2 are directional — but P13 leads, and the
-zero-committed-tests baseline signature repeats.
+The baseline result is the clearest single finding of the campaign: the
+model passes the gates but commits no tests at all, probing with
+throwaway scripts instead. Skill conditions committed 9 to 16 behavior
+tests per run with no narrating comments, and judges cited the test
+suites in most win rationales.
 
-Pairwise (dual anchors + a current-vs-current noise-floor pair): baseline
-0–2 vs current (6–8, 6–7); P10 1–1; P13 1–1 — and the noise-floor pair
-itself split 7–6, so every skill-vs-current margin equals the judge's
-intra-condition resolution limit. On this case the quality judge separates
-skill-vs-baseline (clearly) but not skill-vs-skill. Judge on the baseline
-loss: "the cleaner reusable PID model… but leaves its substantially more
-complex controller behavior effectively untested." Judge on p13-r2's win:
-"clearer measurement modeling, a better-separated cascaded CV/current-
-control design, actuator tracking, and deliberate pack-removal handling in
-every active phase," while the current anchor "can continue driving PWM
-after an active pack disconnect." One instrument note: every condition's
-diff was dinged for the rebuilt `libcharger.so` — the starter repo tracks
-that artifact, so the ding is uniform and non-differential (and P13's
-tracked-artifact exception behaved as designed).
+### charge-controller v2
 
-### catalog-sync HOLDOUT (frozen pre-campaign; no permutation ever saw it)
+Gates here sit far from ceiling (starter 0/12, verified golden 12/12),
+so they discriminate directly, at the price of heavy per-run variance.
 
-The methodology consult's strongest attack was "no untouched holdout."
-This case answers it: key frozen before the campaign (max 19.5), uniform
-kit protocol, n=2 per condition.
-
-| condition | r1 / r2 | mean | % |
-|---|---|---|---|
-| P13-final | 17.5 / 16.0 | **16.75** | 85.9% |
-| P10-hybrid | 17.0 / 16.0 | 16.5 | 84.6% |
-| current | 16.0 / 14.5 | 15.25 | 78.2% |
-| baseline | 14.0 / 14.0 | 14.0 | 71.8% |
-
-Every condition finds all six blocking defects; the entire skill margin is
-the taste tier (rate-limit layering, silent unknown-kind fallthrough, dead
-defensive check, test-shape, narrating comments) — precisely the profile
-the skill exists to add. Zero false positives in all eight transcripts.
-The training-set ordering (P13 ≥ P10 > current > baseline) TRANSFERS.
-
-## 5. Token cost (uncached input + output — the real cost basis)
-
-| condition | tf2 agentic | controller agentic | api review |
-|---|---|---|---|
-| baseline | 56K + 22K | 47K+17K / 52K+20K | 14K + 5K |
-| current | 105K + 34K | 66K+24K / 86K+23K | 16K + 6K (kit) |
-| P8 | 94K + 34K | — | — |
-| P9 | **65K + 27K** | — | — |
-| P10 | 93K + 41K | 65K+25K / 81K+26K | 14K + 7K (kit) |
-| P12 | 69K + 34K | — | — |
-| P13 | PENDING | 79K+28K / 102K+33K | — |
-
-No skill variant carries a meaningful uncached-input premium over current;
-the skill's cost over baseline (~1.3–1.6× input) buys the committed test
-suites and the taste findings. P9 is the lightest full-strength variant.
-P13's controller runs read slightly more (they wrote the largest test
-suites); its review-run costs match P10's.
-
-## 5b. Qualitative code analysis (blinded judge rationales, torefall-v2)
-
-What the anonymized quality judge said about each condition's code, per-condition
-(ratings are that pair's; the current skill is the repeated anchor, rated 7–9):
-
-- **baseline (5):** "concentrates most orchestration and economy in an
-  increasingly monolithic `world.py` with subclass/type coupling… adds no
-  tests, a serious maintainability defect… repetitive ability handlers and
-  narrating comments."
-- **P1-condensed (6):** "adds no tests… retains more orchestration in
-  `world.py`, looser rule/state structures."
-- **P6-tiger (7):** "deliberately preserves auction tombstones for retry-safe
-  buyouts" but weaker separation and fewer consequential tests.
-- **P8-agentic (8, win):** "more cleanly separates combat, economy,
-  orchestration, and boss lifecycle… handler dispatch makes future abilities
-  more localized… tests pin subtle observable rules such as join-order
-  tie-breaking, exact expiry timing, and reconnect idempotency."
-- **P9-structural (6, loss):** review champion, agentic laggard —
-  "increasingly monolithic `world.py`… committed `__pycache__` binaries are a
-  notable hygiene defect." (P10's no-committed-bytecode clause exists because
-  of exactly this run.)
-- **P10-hybrid (8/8/7, 2–1 win):** "deliberately enforces invariants, performs
-  atomic copy-before-commit mutations, defines deterministic targeting, and
-  models encounter lifecycle explicitly… idempotency records and
-  ability-handler dispatch provide stronger invariants and more localized
-  extension points." The r3 loss: "unused class wrappers and special-cases
-  mage behavior" — rep noise is real at n=3.
-- **P12-modular (7, loss):** "subclass tree and `isinstance` coupling" — the
-  pattern cues lived one file-hop away and did not fire.
-
-Controller-v2 qualitative round: PENDING this wave.
-
-## 6. Three measured regularities (scope: this suite, this model)
-
-We call these regularities, not laws — mechanisms are partially isolated
-by the permutation family's ablation structure (P8 = implementation rules
-only, P9 = lens-3 amendment only, P10 = both, all sharing current's
-chassis), but ordering and length were not factorially controlled.
-
-1. **Interference.** Text added for one phase taxed the other phase in
-   every variant that showed a gain: P10's implementation rules won the
-   agentic arena while costing review breadth on bgjobs (17.25 vs current
-   20.83). P13's wording pass recovered most of that tax, so the tax is
-   reducible — but no variant got both arenas' best score from one text.
-2. **Inline beats indirection.** Skill content fired reliably only when
-   inline in the file the model holds during that phase: skip-gating
-   (P11) was bimodal (13.25/10.25/12.75); modular phase files (P12)
-   underperformed even when the transcript shows the model read the right
-   file; the P9 amendment fired 3/3 inline vs 0/3 one file-hop away.
-3. **Gate saturation is task-dependent.** Torefall's fully-specified
-   TASK.md let every condition hit 17/17 — there gates are a floor and
-   discrimination lives in blinded ratings, extension cost, and review
-   keys in the 30–80% band. Controller-v2 shows the complement: gates far
-   from ceiling (0–6 of 12) discriminate directly, at the price of high
-   rep variance.
-
-## 7. Adversarial critique adjudication (the ChatGPT loop)
-
-Every case and the winning prompt text went through xhigh adversarial
-critique. The prompt critique returned 24 findings: 4 were rejected with
-measurements (each would have deleted a measured win source — the
-next-change rule, the structural-remedy paragraph, the pattern cues, the
-lens-2–4 mandate); ~15 wording defects were adopted and became P13.
-Meta-lesson: prompt criticism without an eval harness optimizes essay
-coherence, not model behavior.
-
-## 7b. Preregistration and methodology limits
-
-An xhigh methodology review of this report's design (14 findings) drove
-four fixes applied BEFORE the deciding runs landed: (1) an untouched
-holdout case (catalog-sync, key frozen pre-campaign) became a required
-gate; (2) the P13 ship rule was preregistered in the journal with numeric
-thresholds — tf2 gate parity, controller mean > baseline and ≥ P10 − 1,
-no pairwise majority-loss, holdout ≥ current − 1.0; (3) controller
-pairwise uses two anchors to reduce single-anchor dependence; (4) protocol
-labels (kit vs text-only) are explicit in every table.
-
-Limits we accept and disclose: the scorer (Claude) knew conditions while
-hand-scoring (mitigated by frozen keys, per-finding derivations, and
-append-only records — auditability, not inter-rater validity); the quality
-judge is the same model family as the system under test (self-preference
-not excluded; mitigated by blinding, order randomization, and the
-objective extension-cost metric agreeing with it); task-level n is 5, so
-arena-level claims are directional; api/bgjobs review cells for P13 were
-observed before the ship rule was written (the agentic and holdout cells
-were not); extension cost is a single unvalidated proxy.
-
-## 8. Ratings, retrospective, and version bump
-
-### Prompt ratings (1–10, against this suite's evidence)
-
-- **current — 7/10.** Survives thirteen challengers as the best
-  all-rounder: tf2 quality anchor rated 7–9 across every blinded pair,
-  bgjobs 20.83, holdout 15.25 > baseline 14.0. Known weaknesses, now
-  measured: weakest text-only api configuration (8.83), lens-3
-  structural-remedy suppression (finds the defect, prescribes the
-  cosmetic fix), and no implementation-phase process rules.
-- **P10-hybrid — 8/10 as an agentic-profile text.** The best measured
-  coding-agent prompt in this campaign: tf2 2–1, cheapest verified
-  extension, holdout 16.5. Docked for the bgjobs breadth tax and the
-  unexplained controller gate floor (1/1 at n=2).
-- **P13-final — 7.5/10 as a review-profile text.** Campaign-max
-  transcripts on all three review cases and best controller gates, but
-  the tf2 pairwise + stage-B regression shows ~15 simultaneous wording
-  edits were too coarse a unit; it needed the bisect it will now get.
-
-### Process retrospective
-
-Done well: adversarial xhigh critique gated every case, the winning
-prompt, and the methodology itself; frozen keys with per-finding
-derivations and append-only records; the ratings-pairwise instrument
-(blinded, order-randomized, anchored, with a noise-floor pair); an
-objective extension-cost metric that twice corroborated the judges; the
-mid-campaign preregistration that then **blocked a tempting bad ship**;
-the holdout answer to the winner's-curse critique; two harness defects
-(verifier bytecode leak, controller scoring layout) caught by reading
-outputs rather than trusting exit codes, with all results re-derived.
-
-Done poorly, disclosed: n=2–3 per cell throughout (directional, not
-confirmatory); scorer knew conditions; judge shares a model family with
-the systems under test; torefall's gate saturation was discovered only
-after building it (the controller case then over-corrected into noise);
-the ship rule was written mid-campaign rather than at the start —
-api/bgjobs cells were already visible; P13 bundled fifteen edits into one
-arm, forcing this round's null result.
-
-### Commit / version package (Rasheed's decision, prepared)
-
-Recommended: commit the eval suite + this report, tag **v1.2.0-evals**,
-and leave `skills/metis/SKILL.md` untouched this round (the preregistered
-outcome). To commit: `evals/cases-v5/` (FINAL-REPORT.md, api + bgjobs
-cases with keys and rescores, torefall-v2, charge-controller-agentic v2
-with golden), `evals/cases-v4/catalog-sync-review/rescore-holdout.md`,
-`evals/cases-v5/skill-permutations/` (P1–P13 texts, adjudications,
-SKILL-production files for P10/P13). If a deployment-profile override is
-preferred instead of the rule: P10 for agentic-primary use or P13 for
-review-primary use are both defensible, documented trades — that override
-is explicitly the owner's call, not the harness's.
-
-Queued next round: **P14 bisect** (P10 + review-side edits #2/#3, #17,
-#20-tail, phase-map index fixes only), tf2 pairwise n≥5, controller n≥4,
-and multi-anchor judging.
-
-## 9. The bisect day (P14a → P15): placement is the mechanism
-
-Four arms, each preregistered with the same gates — (a) bgjobs mean
-≥ 20.0, (b) tf2 gates perfect and not majority-lost vs the current
-anchor — plus the virgin holdout as the final gate for whatever passed
-both:
-
-| arm | text (vs P10) | bgjobs | tf2 pairwise | gates |
+| condition | reps | gates per rep | mean | committed tests |
 |---|---|---|---|---|
-| P14a | +2 sentences, review mode only (#17, #20-tail) | 17.25 (=P10) | **2–0 sweep** (8, 9) | (a)✗ (b)✓ |
-| P14b | #2/#3 validate-vs-assert, diffuse placement | 18.6 | 1–1 | (a)✗ (b)✓ |
-| P14c | both combined, diffuse | 20.75 (super-additive) | **0–2 loss** | (a)✓ (b)✗ |
-| **P15** | P14a + #2/#3's content as ONE sentence inside lens 1 | **21.5, σ=0** | 1–1 (9, 8) | **(a)✓ (b)✓** |
-| P15 holdout | — | **16.0 > current 15.25** | — | **final gate ✓** |
+| P13 | 2 | 6 / 3 | 4.5 | 9 to 10 |
+| P15 | 3 | 5 / 4 / 1 | 3.33 | 9 to 13 |
+| current | 3 | 1 / 6 / 1 | 2.67 | 6 to 10 |
+| baseline | 2 | 3 / 2 | 2.5 | 0 |
+| P10 | 2 | 1 / 1 | 1.0 | 6 to 8 |
 
-The mechanism this isolates: **interference is a placement phenomenon,
-not a content phenomenon.** The validate-vs-assert distinction placed in
-implementer-held sections (P13, P14c) regressed agentic architecture
-(0–2 losses, near-identical judge rationales); the same distinction
-scoped into the review lens lifted review MORE (21.5 vs 18.6) while
-leaving agentic output untouched — because the implementing agent never
-holds the sentence. Six consecutive P1x-family bgjobs transcripts had
-zero false positives; P14a additionally showed two review-mode sentences
-can improve agentic pairwise outcomes (2–0 with a campaign-best 9),
-consistent with lighter review-phase context freeing the whole text.
+Current spans 1 to 6 across three runs, so treat condition means as
+directional. The zero-tests baseline signature repeats.
 
-Confirmed regularities after sixteen texts: content fires inline in the
-held file (P12/P11); content taxes the phases that hold it (P13/P14c);
-and content scoped to the phase that needs it escapes the tax (P15). The
-skill-text design rule that falls out: **write each phase's guidance
-inside that phase's section, keep implementer-held sections minimal, and
-never let cross-phase principles float in globally-held text.**
+The pairwise round used two anchors plus a current-vs-current pair to
+measure the judge's own noise floor. That floor came out at one rating
+point, and every skill-vs-skill margin sat exactly at it, so on this
+case the judge separates skill from baseline (baseline lost both pairs)
+but not skill from skill. On the baseline loss: "the cleaner reusable
+PID model, but leaves its substantially more complex controller behavior
+effectively untested." Note on the instrument: every diff was docked for
+the rebuilt `libcharger.so`, which the starter repo tracks on purpose,
+so the ding is uniform across conditions.
 
-## 10. High-n confirmation round (P15 vs current, head-to-head)
+### catalog-sync holdout
 
-Run at the owner's direction before any promotion: n=5 bgjobs, n=3 api,
-n=5 tf2 pairwise, n=3 controller, per side, identical protocols.
+An adversarial methodology review of this campaign said its most
+damaging weakness was the lack of an untouched holdout. This case
+answers that: its key froze before the campaign began, no permutation
+ever ran on it during tuning, and it served only as a final gate.
 
-| instrument | n/side | P15 | current | verdict |
+| condition | reps | mean | percent of max |
+|---|---|---|---|
+| P13 | 2 | 16.75 | 85.9 |
+| P10 | 2 | 16.5 | 84.6 |
+| P15 | 2 | 16.0 | 82.1 |
+| current | 2 | 15.25 | 78.2 |
+| baseline | 2 | 14.0 | 71.8 |
+
+Every condition found all six blocking defects. The entire skill margin
+is the taste tier: rate limiting at the wrong layer, a silent
+unknown-kind fallthrough, a dead defensive check, test shape, narrating
+comments. That is the exact profile the skill exists to add, and the
+ordering from the tuning cases transferred to a case none of the texts
+had seen. Zero false positives across all ten transcripts.
+
+## 5. Token cost
+
+Uncached input plus output, which is what a run actually bills; raw
+input totals are dominated by cache re-reads.
+
+| condition | torefall | controller | api review |
+|---|---|---|---|
+| baseline | 56K + 22K | 47-52K + 17-20K | 14K + 5K |
+| current | 105K + 34K | 66-86K + 23-24K | 16K + 6K |
+| P9 | 65K + 27K | | |
+| P10 | 93K + 41K | 65-81K + 25-26K | 14K + 7K |
+| P13 | 83-91K + 34-36K | 79-102K + 28-33K | |
+| P15 | 72-96K + 31-42K | | |
+
+No variant costs meaningfully more than current. The skill's premium
+over baseline (roughly 1.3 to 1.6 times the input) is what buys the
+committed test suites and the taste findings.
+
+## 6. What the blinded judge said about the code
+
+Selected rationales from the torefall pairwise, quoted verbatim. The
+judge saw only anonymized diffs.
+
+On the baseline (rated 5): "concentrates most orchestration and economy
+in an increasingly monolithic `world.py` with subclass/type coupling...
+adds no tests, a serious maintainability defect."
+
+On P8 (rated 8, win): "more cleanly separates combat, economy,
+orchestration, and boss lifecycle... tests pin subtle observable rules
+such as join-order tie-breaking, exact expiry timing, and reconnect
+idempotency."
+
+On P9 (rated 6, loss, despite being the review champion): "increasingly
+monolithic `world.py`... committed `__pycache__` binaries are a notable
+hygiene defect." The no-committed-bytecode clause in the shipped skill
+exists because of this run.
+
+On P10 (rated 8, win): "deliberately enforces invariants, performs
+atomic copy-before-commit mutations, defines deterministic targeting,
+and models encounter lifecycle explicitly."
+
+On P12 (rated 7, loss): "subclass tree and `isinstance` coupling." Its
+pattern cues lived in a separate reference file, and the code shows they
+did not fire.
+
+On P15 (rated 9, win): "data-driven class model, ability dispatch table,
+explicit encounter state, and isolated boss/economy logic make future
+changes more localized. It also enforces stronger boundary contracts,
+replay safety, atomicity, and gold-conservation invariants."
+
+## 7. Three regularities
+
+These held across the suite for this model. The permutation family gives
+partial ablation (P8 is the implementation rules alone, P9 the review
+amendment alone, P10 both, all on the same chassis), but ordering and
+length were not factorially controlled, so they are regularities rather
+than laws.
+
+1. Interference. Text added for one phase taxed the other phase in
+   every variant that showed a gain. P10's implementation rules won the
+   agentic arena and cost review breadth; P13's review wording recovered
+   the breadth and cost agentic quality. No single text scored best in
+   both arenas.
+2. Inline beats indirection. Skill content fired reliably only when it
+   sat in the file the model holds during that phase. Skip-gating (P11)
+   was bimodal. Modular reference files (P12) underperformed even when
+   the transcript proves the file was read. The P9 amendment fired in
+   three of three runs inline and zero of three runs one file-hop away.
+3. Gate saturation depends on the task, not the model. Torefall's fully
+   specified task let every condition pass every gate, pushing all
+   discrimination into the pairwise judgment and the extension probe.
+   The controller case, far from ceiling, discriminates through gates
+   directly but pays for it in variance.
+
+## 8. Adversarial critique, preregistration, and limits
+
+Every case key and the leading prompt text went through xhigh
+adversarial critique. The prompt critique returned 24 findings. Four
+were rejected because the measurements said otherwise: each of those
+four fixes would have removed something the harness had identified as a
+win source (the next-change rule, the structural-remedy paragraph, the
+pattern cues, the lens 2-4 mandate). About fifteen wording defects were
+adopted and became P13. The general lesson: prompt criticism without an
+eval harness optimizes for essay coherence, not model behavior.
+
+A separate xhigh review attacked the methodology itself and drove four
+fixes before the deciding runs landed: the untouched holdout became a
+required gate, the ship rule was preregistered in the journal with
+numeric thresholds, the controller pairwise gained a second anchor, and
+protocol labels became explicit in every table.
+
+Limits, disclosed rather than fixed: the hand-scorer knew which
+condition produced each transcript (frozen keys and per-finding
+derivations give auditability, not inter-rater validity). The quality
+judge shares a model family with the systems under test, so
+self-preference is possible; blinding, order randomization, and the
+independent extension-cost metric are mitigations, not proof. Task-level
+n is five, so arena-level claims are directional. The extension-cost
+metric is a single unvalidated proxy. Early review cells were observed
+before the ship rule was written; the agentic and holdout cells were
+not.
+
+## 9. The bisect: placement is the mechanism
+
+P13's refusal left a question. Its fifteen wording edits recovered
+P10's review breadth but broke its agentic quality; which edits did
+what? Four arms, each preregistered against the same two gates (bgjobs
+mean at least 20.0; torefall gates perfect and pairwise not
+majority-lost), with the holdout reserved as a final gate:
+
+| arm | change vs P10 | bgjobs | torefall pairwise | gates |
 |---|---|---|---|---|
-| bgjobs review /30 | 5 | 20.5 (med 21.5) | 20.6 (med 21.0) | **parity** |
-| api review /20.5 | 3 | 12.67 | 12.42 | **parity** |
-| tf2 gates | 5 | 17/17 + 19/19 ×5 | ceiling | parity at ceiling |
-| tf2 blinded pairwise | 5 | **3–2, ratings mean 8.2** | 7.8 | directional edge |
-| controller gates /12 | 3 | 3.33 | 2.67 | directional edge (noisy) |
-| holdout /19.5 | 2 | 16.0 | 15.25 | directional edge |
-| stage-B extension | 1 | +254 green | +208 green | directional negative |
-| uncached tokens | — | comparable | comparable | parity |
+| P14a | two sentences, review mode only | 17.25 (same as P10) | won 2-0 (8, 9) | review gate failed |
+| P14b | validate-vs-assert edits, spread through the text | 18.6 | 1-1 | review gate failed |
+| P14c | both together, spread | 20.75 | lost 0-2 | agentic gate failed |
+| P15 | P14a plus the same content as one sentence inside lens 1 | 21.5, no variance | 1-1 (9, 8) | both passed |
 
-The n=2 review-superiority claims did NOT survive n≥3 — the surviving,
-scientifically defensible claim is: **no regression on any instrument at
-honest n; majority of blinded quality wins with a +0.4 mean rating edge
-(P15 took two 9s; its losses were to the anchor's only 9s); favorable
-direction on controller and the holdout; one unfavorable single-n
-observation (stage-B).** Disclosed risk: the bgjobs LIGHTWEIGHT_TYPES
-false positive is chassis-correlated (3/9 P10-family reps incl. one P15
-rep, vs 0/5 current). P15 additionally holds the best single transcript
-ever recorded on both review cases (api 14.75, bgjobs 22.5).
+P15 then passed the holdout gate (16.0 against current's 15.25) and
+became the candidate.
 
-Recommendation: promote P15 on no-regression + blinded-quality majority +
-placement-sound architecture + vault alignment (see
-`P15-alignment-and-rationale.md`); or hold current at zero cost — the
-measured gap is modest and honestly stated either way.
+The mechanism these four arms isolate: interference comes from where a
+sentence sits, not what it says. The validate-vs-assert distinction
+placed in sections the implementing agent holds (P13, P14c) degraded the
+code both times, with near-identical judge rationales. The same
+distinction scoped into the review lens lifted review scores further
+than the spread-out version and left the code untouched, because the
+implementing agent never reads it. The design rule that falls out: put
+each phase's guidance inside that phase's section, keep the
+implementer-held text minimal, and never let cross-phase principles
+float in globally-held text.
+
+## 10. Confirmation round
+
+Run before promotion at the owner's direction: five bgjobs and five
+torefall-pairwise reps per side, three api and three controller reps per
+side, identical protocols.
+
+| instrument | n per side | P15 | current | reading |
+|---|---|---|---|---|
+| bgjobs review (of 30) | 5 | 20.5 | 20.6 | parity |
+| api review (of 20.5) | 3 | 12.67 | 12.42 | parity |
+| torefall gates | 5 | all pass | all pass | parity at ceiling |
+| torefall pairwise | 5 | 3-2, mean rating 8.2 | 7.8 | edge to P15 |
+| controller gates (of 12) | 3 | 3.33 | 2.67 | edge to P15, noisy |
+| holdout (of 19.5) | 2 | 16.0 | 15.25 | edge to P15 |
+| stage-B extension | 1 | +254 | +208 | edge to current |
+| tokens | | comparable | comparable | parity |
+
+The small-sample review-superiority claims from earlier in the day did
+not survive these n's, and the report stands on what did: no regression
+on any instrument, a majority of blinded quality wins with a 0.4 mean
+rating edge (P15 took the round's two 9s; its losses were to the
+anchor's only 9s), favorable direction on the two cases P15 never
+trained on, and one unfavorable single observation (stage-B). On that
+basis P15 shipped as v1.2.0.
+
+## 11. What changed in the prompt, and why it is still Metis
+
+The shipped diff, in full:
+
+1. An implementation-rules section: write the failing behavior check
+   first when a harness exists and commit it with the fix; a small set
+   of behavior-pinning tests beats a large redundant suite, and
+   assertion count is not a merit signal. Fix causes, not sites, and
+   look for a defect's siblings. After the fix works, ask what the next
+   change costs, and restructure to data plus one system while context
+   is loaded. The last requirement gets the same discipline as the
+   first. Leave touched code cleaner; commit no generated artifacts
+   unless the repo tracks them.
+2. Review lens 3 now prescribes the structural remedy rather than the
+   cosmetic one: a bloated signature wants a config object or a
+   responsibility split, tangled parsing/transport/policy wants pure
+   builders behind a seam with policy left to the caller, and the new
+   shape gets named concretely.
+3. Review lens 1 now distinguishes validating untrusted data at a trust
+   boundary from asserting internal invariants: a missing invariant on a
+   state transition is substance, validation that duplicates an earlier
+   guarantee is noise.
+4. Small diffs get one combined review pass, and a lens may produce no
+   findings.
+
+Nothing was removed from the design principles, working rules, SOLID
+checklist, pattern cues, or testing checklist.
+
+Checked against the six source notes the skill derives from (the
+macro-principles note, TIGER_STYLE, the component-boundaries talk, the
+SICP top-down design note, the testing-philosophy note, and the original
+skill draft): all seven macro principles keep their one-to-one encoding,
+and the draft's deliberate exclusions (line caps, Zig-specific rules,
+zero-dependency policy, no-recursion) stay excluded. Several notes got
+stronger. The lens 1 sentence is TIGER_STYLE's own position, that
+asserts exist for programmer-error invariants rather than re-validating
+parsed input, restated for reviewers. "Fix causes, not sites" is the
+zero-technical-debt rule in agent form. The structural-remedy sentence
+is the component-boundaries red-flag test (one feature touching eight
+classes means the boundaries are wrong) turned into a review
+prescription. The strongest evidence the style survived: the blinded
+judge, which never saw the skill or the notes, described the winning
+code in their vocabulary.
+
+## 12. Retrospective and next round
+
+What worked: adversarial critique gated every artifact including the
+methodology; frozen keys with per-finding derivations kept every score
+auditable; the preregistered rules refused two candidates that looked
+good enough to ship on instinct; the holdout answered the
+winner's-curse objection; two harness bugs (a verifier bytecode leak
+and a scoring-layout error) were caught by reading outputs instead of
+trusting exit codes, and all affected results were re-derived.
+
+What did not: sample discipline arrived mid-campaign, so early small-n
+claims had to be walked back. The scorer was not blinded to condition.
+The judge shares a family with the model under test. Torefall's gate
+saturation was discovered only after the case was built, and the
+controller case over-corrected into variance. P13 bundled fifteen edits
+into one arm, which forced the bisect that a finer first pass would
+have avoided.
+
+Queued for the next round: a fresh holdout (catalog-sync spent its gate
+role this campaign), an investigation of the text-family false-positive
+pattern on bgjobs, higher-n controller runs, and one untested idea from
+the 9-rated diffs: a pattern cue for splitting subsystems out of a
+growing orchestrator.

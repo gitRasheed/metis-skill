@@ -1,25 +1,29 @@
 # Changelog
 
-## v1.2.0 — 2026-07-19
+## v1.2.0 (2026-07-19)
 
-The P15 "phase-scoped" text: winner of a 16-permutation eval campaign
-(~90 hand-scored runs, five cases, preregistered ship rules; full report in
-`evals/cases-v5/`). Skill diff vs v1.1.0: +14/−5 lines.
+The P15 "phase-scoped" text, winner of a sixteen-permutation eval campaign
+(about ninety hand-scored runs, five cases, preregistered ship rules; the
+full report lives in `evals/cases-v5/`). The skill diff against v1.1.0 is
+14 insertions and 5 deletions.
 
-- New **Implementation rules** section: behavior-test-first with an
-  anti-assert-spam clause, fix causes not sites, optimize for the next
-  change, no quality decay on long task lists, campsite rule +
-  tracked-artifact exception.
-- Review **lens 3** prescribes structural remedies (config object /
-  responsibility split / seam), not cosmetic fixes.
-- Review **lens 1** distinguishes untrusted-data validation from
+- New implementation-rules section: write the failing behavior check
+  first and commit it with the fix, keep test suites small and
+  behavior-pinning rather than assert-heavy, fix causes not sites,
+  restructure for the next change while context is loaded, hold quality
+  on long task lists, and leave touched code cleaner without committing
+  generated artifacts the repo does not track.
+- Review lens 3 prescribes structural remedies (a config object, a
+  responsibility split, a seam) instead of cosmetic fixes.
+- Review lens 1 distinguishes untrusted-data validation from
   internal-invariant assertions: invariant gaps are substance, duplicate
   validation is noise.
-- Small diffs get one combined review pass; a lens may legitimately
+- Small diffs get one combined review pass, and a lens may legitimately
   produce no findings.
-- Mirror (`.claude/skills/metis/`) and `PORTABLE_PROMPT.md` updated to match.
+- The Claude Code mirror and `PORTABLE_PROMPT.md` were regenerated to
+  match.
 
-## v1.1.0 — 2026-07-04
+## v1.1.0 (2026-07-04)
 
 Review-mode and agentic-discipline round (`evals/cases-v3/`,
 `evals/cases-v4/`): tiered lens-based review with severity format and
@@ -27,11 +31,11 @@ verify-before-reporting, sub-agent fan-out policy for large diffs,
 review-examples reference, batch-classification design principle 10,
 long-running-session coordination files.
 
-## v1.0.1 — 2026-06-08
+## v1.0.1 (2026-06-08)
 
 Wording and reference-path fixes; portable prompt sync.
 
-## v1.0.0 — 2026-06-06
+## v1.0.0 (2026-06-06)
 
 Initial release: design principles, LLM agent process, working rules,
 SOLID checklist, pattern cues, testing checklist, final verification,
