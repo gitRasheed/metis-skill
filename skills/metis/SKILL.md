@@ -5,12 +5,13 @@ description: Use when an LLM is doing non-trivial coding work, including impleme
 
 # Metis
 
+
 Write code that favors plain data, pure logic, clear call sites, and early architectural thinking. These are strong defaults, not rigid laws: follow the surrounding codebase, framework constraints, and language norms when they clearly matter more.
 
 Apply sections by phase instead of holding everything at once:
 
 - Designing or starting a task: Design principles, LLM agent process
-- Implementing: Working rules, plus the SOLID checklist for non-trivial modules
+- Implementing: Working rules, Implementation rules, plus the SOLID checklist for non-trivial modules
 - Writing tests: Testing checklist
 - Reviewing a diff or PR: Code review mode
 - Before claiming done, committing, or pushing: Final verification checklist
@@ -34,6 +35,14 @@ Apply sections by phase instead of holding everything at once:
 2. Trace invariants before adding defensive checks. Before adding null/None checks, fallback branches, or worst-case guards, inspect upstream producers and downstream consumers. If a parser, type, or earlier boundary already guarantees the value, do not duplicate the check. Add one when data crosses a trust boundary, the invariant can drift, or the contract should be explicit.
 3. Distinguish essential from accidental complexity. Existing workarounds, hacks, and tech debt in the codebase are not patterns to preserve unless they encode a real constraint — check what a workaround is for before replicating it in new code.
 4. Detect thrash and re-derive. If you have fixed the same bug more than twice in different ways, stop iterating on patches: restate the intended behavior, re-read the plan or spec, and derive the fix from that understanding instead.
+
+## Implementation rules (when implementing or fixing)
+
+1. For every requirement, write the failing behavior check first when a test harness exists; watch it fail, fix, watch it pass. Commit the check with the fix — a fix without a guarding test is half done. A small set of behavior-pinning tests beats a large redundant suite; assertion count is not a merit signal.
+2. Fix causes, not sites: when two symptoms share a root, restructure the root; when a defect class exists once, look for its siblings before finishing — the same stale check or missing boundary usually appears more than once.
+3. Optimize for the next change: after the fix works, ask what the next feature in this area costs; if your structure makes it expensive (touching many branches or classes), restructure to data plus one system now, while context is loaded.
+4. Long task lists do not suspend quality: the last requirement gets the same test, assertion, and naming discipline as the first. Do not drop the quality pass because the functional list is long.
+5. Leave the campsite cleaner: delete dead code and scaffolding you find mid-task if it is inside the code you already changed, and never commit generated artifacts (bytecode, build output) with your change.
 
 ## Working rules
 
@@ -116,13 +125,13 @@ Tests are code: minimize test logic to minimize test bugs.
 
 ## Code review mode
 
-Use this when reviewing a diff, PR, or another agent's work. Do not check every rule in one read; make several passes over the diff, each asking one question. Load `references/review-examples.md` first (compact review-time contrasts for replay safety, comment discipline, and cleanup); load other references only when a lens needs more depth.
+Use this when reviewing a diff, PR, or another agent's work. For a small diff, combine the lenses below into one careful pass; when the diff is large or complex, make several passes, each asking one lens's question — do not check every rule in one read. Load `references/review-examples.md` first (compact review-time contrasts for replay safety, comment discipline, and cleanup); load other references only when a lens needs more depth.
 
 Lens passes, in order:
 
-1. Correctness and contracts — does the change do what it claims; do all variants honor the advertised contract (L); are assertions present where data crosses trust boundaries; are failure paths handled.
+1. Correctness and contracts — does the change do what it claims; do all variants honor the advertised contract (L); are assertions present where data crosses trust boundaries; are failure paths handled. Distinguish validation of untrusted data at a trust boundary from assertions of internal invariants whose failure means a programming error: missing internal-invariant protection on state transitions and cross-record contracts is report-worthy substance, while validation that duplicates what a parser, type, or earlier boundary already guarantees is noise.
 2. Data and state — plain data vs behavior-heavy objects; unions for mutually exclusive states; mutation and I/O isolated at the edges.
-3. Control flow and API shape — call sites read cleanly; ifs up, fors down; S/O/I/D; no speculative abstractions.
+3. Control flow and API shape — call sites read cleanly; ifs up, fors down; S/O/I/D; no speculative abstractions. For every surface defect you find here, prescribe the STRUCTURAL remedy, not the cosmetic one: a bloated signature wants a config object or a split of responsibilities, not keyword-only markers; a method doing parsing+shaping+transport+error policy wants those responsibilities separated (pure builders, an I/O port the caller can fake, policy left with the caller); a hard-wired dependency wants a seam because forty callers must test against it. Name the new shape concretely.
 4. Tests and slop — the Testing checklist, plus: comments that narrate code or restate the obvious, multi-line comments that should be one line, duplicated defensive checks, dead scaffolding, casts that dodge type errors, doc spam.
 
 Findings:
@@ -130,7 +139,7 @@ Findings:
 - Verify before reporting. Trace the invariant upstream and downstream first; do not flag "missing validation" that a parser, type, or earlier boundary already guarantees.
 - Report each finding as `file:line`, severity (blocking / should-fix / nit), and one sentence stating the problem and the fix. No essays.
 - Tag each finding with the lens or rule that produced it, e.g. `[lens 2: data and state]` or `[rule: trace invariants]`. Producing the tag forces a systematic sweep of every lens; drop tags only when the surrounding tooling requires a fixed format.
-- Quality findings from lenses 2–4 are not padding. Report state-modeling, hierarchy, control-flow, test-logic, and comment defects at should-fix or nit severity even when blocking correctness findings dominate the review.
+- Quality findings from lenses 2–4 are not padding. Report state-modeling, hierarchy, control-flow, test-logic, and comment defects at should-fix or nit severity even when blocking correctness findings dominate the review. A lens may legitimately produce no findings; do not manufacture one to fill a category.
 
 Sub-agent fan-out, only when both hold: a sub-agent or task tool exists in your environment, and the diff is large (roughly more than 400 changed lines or 8 files):
 
