@@ -36,7 +36,7 @@ npx skills add https://github.com/gitRasheed/metis-skill --skill metis -g -a cla
 npx skills update -g
 ```
 
-`CHANGELOG.md` lists what changed.
+Release notes live on the [releases page](https://github.com/gitRasheed/metis-skill/releases).
 
 ## Use
 
