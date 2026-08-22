@@ -5,7 +5,6 @@ description: Use when an LLM is doing non-trivial coding work, including impleme
 
 # Metis
 
-
 Write code that favors plain data, pure logic, clear call sites, and early architectural thinking. These are strong defaults, not rigid laws: follow the surrounding codebase, framework constraints, and language norms when they clearly matter more.
 
 Apply sections by phase instead of holding everything at once:
@@ -29,7 +28,7 @@ Apply sections by phase instead of holding everything at once:
 9. Design for the hardest real requirement first, then simplify downward. Do not architect for the easy case and try to scale it up later.
 10. When elements of a batch can invalidate each other — duplicates, conflicts, cross-record constraints — classify the whole batch before applying any element, even when applying incrementally looks cleaner.
 11. Define errors out of existence: when a contract choice can make a failure case impossible — an operation that is naturally idempotent, a range that clamps, a delete that succeeds when the target is already gone — prefer it over raising and forcing every caller to handle the case.
-12. A side effect that crosses a boundary — a send, a charge, a write — needs a stable identity (idempotency key, dedupe token) so retries and replays are safe.
+12. A side effect that crosses a boundary — a send, a charge, a write — needs a stable identity (idempotency key, dedupe token) that its owner atomically deduplicates, so retries and replays are safe.
 
 ## LLM agent process
 

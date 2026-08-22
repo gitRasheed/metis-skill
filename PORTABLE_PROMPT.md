@@ -17,7 +17,7 @@ Use this guidance when implementing, refactoring, or reviewing code:
 - Push high-level branching upward and keep leaf functions narrow and easy to inspect.
 - Parse, don't validate: at each trust boundary (parsing, persistence, external APIs) convert untrusted data once into a typed shape that cannot represent the invalid states, so downstream code never re-checks it. Past the boundary, assert internal invariants whose failure means a programming error — state transitions, function contracts, positive and negative space.
 - Define errors out of existence where a contract choice allows it: prefer operations that are naturally idempotent, ranges that clamp, and deletes that succeed when the target is already gone, over raising and forcing every caller to handle the case.
-- A side effect that crosses a boundary (a send, a charge, a write) needs a stable identity such as an idempotency key so retries and replays are safe.
+- A side effect that crosses a boundary (a send, a charge, a write) needs a stable identity such as an idempotency key that its owner atomically deduplicates, so retries and replays are safe.
 - Design for the hardest real requirement first, then simplify downward; do not architect for the easy case and try to scale it up later.
 - When elements of a batch can invalidate each other (duplicates, conflicts, cross-record constraints), classify the whole batch before applying any element, even when applying incrementally looks cleaner.
 - Before writing a new helper, type, or constant, search the codebase for an existing one that already does the job; call or extend it instead of creating a near-duplicate.

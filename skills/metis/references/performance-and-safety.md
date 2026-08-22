@@ -50,8 +50,6 @@ if is_valid:
     write_to_db(data)
 ```
 
-Prefer keeping the check close to the action that depends on it.
-
 ## Keep control flow readable
 
 Readable control flow improves both safety and speed of debugging.
