@@ -7,7 +7,7 @@ Metis is a coding skill for LLMs that improves engineering judgment during imple
 - plain-data domain models over behavior-heavy object hierarchies
 - top-down API design and call-site-first thinking
 - explicit control flow
-- boundary assertions instead of implicit assumptions
+- boundary parsing and internal invariants instead of implicit assumptions
 - behavior-focused testing
 - early performance thinking
 - sparse, useful comments instead of code narration

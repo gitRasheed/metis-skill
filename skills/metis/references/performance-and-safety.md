@@ -13,36 +13,29 @@ Before coding, ask which resource is likely to dominate:
 
 This is only a heuristic, but it is a useful default. Large gains usually come from changing architecture, batching, or data movement rather than polishing hot loops too early.
 
-## Boundary assertions
+## Boundary parsing and internal invariants
 
-Assertions are especially valuable where data crosses trust boundaries:
+Where untrusted data enters — request parsing, file and database I/O, API inputs, deserialization — parse it once into a typed shape and report bad input through normal error handling. A malformed request is an expected outcome, not a programming error.
 
-- request parsing
-- file and database I/O
-- API inputs and outputs
-- serialization and deserialization
-- state transitions
+Assertions belong past that boundary, on invariants whose failure means a bug:
 
-Validate what should be true and, when useful, what must not be true.
-
-Examples:
-
-- ranges are valid
-- required fields are present
-- reserved or sentinel values are rejected
-- impossible transitions are blocked
+- state transitions that should be impossible
+- cross-record contracts between values that are valid alone
+- postconditions an earlier internal step already promised
 
 Example:
 
 ```python
-def process_transfer(amount: int, flags: int) -> None:
-    assert amount > 0
-    assert amount <= ACCOUNT_BALANCE_MAX
-    assert flags & RESERVED_FLAGS_MASK == 0
-    assert amount != SENTINEL_AMOUNT
+def parse_transfer(raw: dict) -> Transfer:
+    ...  # missing fields, bad amounts -> InputError, not a crash
+
+def apply_reserved_transfer(account: Account, transfer: ReservedTransfer) -> None:
+    assert transfer.account_id == account.id
+    assert account.balance >= transfer.amount
+    assert transfer.flags & RESERVED_FLAGS_MASK == 0
 ```
 
-This checks both positive space and negative space. Do not only assert what you want to allow; also assert obviously bad or reserved cases when they matter.
+The parser owns rejecting bad input; the assertions guard promises the reservation step already made. Assert both positive space and negative space: not only what must be true, but reserved or impossible cases when they matter.
 
 ## Keep invariants close to use
 

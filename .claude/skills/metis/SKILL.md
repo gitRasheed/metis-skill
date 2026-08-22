@@ -1,6 +1,6 @@
 ---
 name: metis
-description: Use when an LLM is doing non-trivial coding work, including implementing features, fixing bugs, refactoring, designing APIs or module boundaries, writing tests, reviewing code, or preparing to commit. Guides the model toward plain data, top-down API design, simple control flow, SOLID without ceremony, boundary assertions, behavior-first testing, final verification, anti-slop cleanup, and a tiered lens-based code review. Not needed for trivial one-line edits, pure prose, or rote mechanical changes.
+description: Use when an LLM is doing non-trivial coding work, including implementing features, fixing bugs, refactoring, designing APIs or module boundaries, writing tests, reviewing code, or preparing to commit. Guides the model toward plain data, top-down API design, simple control flow, SOLID without ceremony, boundary parsing and internal invariants, behavior-first testing, final verification, anti-slop cleanup, and a tiered lens-based code review. Not needed for trivial one-line edits, pure prose, or rote mechanical changes.
 ---
 
 # Metis
@@ -80,7 +80,7 @@ Full do/don't code for each cue lives in `../../../skills/metis/references/examp
 - Plain data plus systems: `Trade` as a dataclass with `validate_trade()` / `price_trade()` / `execute_trade()`, not a `Trade -> OptionTrade -> CoveredCallTrade` hierarchy where one feature touches many classes.
 - Unions for exclusive states: `PaymentMethod = CardPayment | CashPayment | BankTransfer`, not inheritance plus isinstance chains.
 - Ifs up, fors down: the parent partitions and decides; leaves loop over homogeneous work.
-- Boundary assertions: at parsing, I/O, API, and state-transition edges, assert positive and negative space (`amount > 0`, `flags & RESERVED_MASK == 0`).
+- Boundary parsing, internal invariants: parse untrusted data into a typed shape at the edge; past it, assert positive and negative space (`amount > 0`, `flags & RESERVED_MASK == 0`).
 - Explicit tests: one behavior visible per test; loops and branching in a test hide mistakes in the harness instead of the implementation.
 
 Two contrasts worth keeping in front of you. Ifs up, fors down — good:
@@ -133,7 +133,7 @@ Use this when reviewing a diff, PR, or another agent's work. For a small diff, c
 
 Lens passes, in order:
 
-1. Correctness and contracts — does the change do what it claims; do all variants honor the advertised contract (L); are assertions present where data crosses trust boundaries; are failure paths handled. Distinguish validation of untrusted data at a trust boundary from assertions of internal invariants whose failure means a programming error: missing internal-invariant protection on state transitions and cross-record contracts is report-worthy substance, while validation that duplicates what a parser, type, or earlier boundary already guarantees is noise.
+1. Correctness and contracts — does the change do what it claims; do all variants honor the advertised contract (L); is untrusted data parsed where it crosses a trust boundary; are internal invariants asserted; are failure paths handled. Distinguish validation of untrusted data at a trust boundary from assertions of internal invariants whose failure means a programming error: missing internal-invariant protection on state transitions and cross-record contracts is report-worthy substance, while validation that duplicates what a parser, type, or earlier boundary already guarantees is noise.
 2. Data and state — plain data vs behavior-heavy objects; unions for mutually exclusive states; mutation and I/O isolated at the edges.
 3. Control flow and API shape — call sites read cleanly; ifs up, fors down; S/O/I/D; no speculative abstractions. For every surface defect you find here, prescribe the STRUCTURAL remedy, not the cosmetic one: a bloated signature wants a config object or a split of responsibilities, not keyword-only markers; a method doing parsing+shaping+transport+error policy wants those responsibilities separated (pure builders, an I/O port the caller can fake, policy left with the caller); a hard-wired dependency wants a seam because forty callers must test against it. Name the new shape concretely.
 4. Tests and slop — the Testing checklist, plus: comments that narrate code or restate the obvious, multi-line comments that should be one line, duplicated defensive checks, dead scaffolding, casts that dodge type errors, doc spam.
@@ -182,6 +182,6 @@ Relax when the codebase has a strong local convention that would be expensive to
 - For plain-data architecture, unions, and system boundaries (review lens 2): `../../../skills/metis/references/architecture.md`
 - For call-site-first API design (review lens 3): `../../../skills/metis/references/api-design.md`
 - For testing style and tradeoffs (review lens 4): `../../../skills/metis/references/testing.md`
-- For boundary assertions and performance framing (review lens 1): `../../../skills/metis/references/performance-and-safety.md`
+- For boundary parsing, internal invariants, and performance framing (review lens 1): `../../../skills/metis/references/performance-and-safety.md`
 - For optional concrete do/don't examples when the task is complex or ambiguous: `../../../skills/metis/references/examples.md`
 - For compact review-time contrasts when reviewing a diff or PR: `../../../skills/metis/references/review-examples.md`
