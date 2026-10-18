@@ -21,7 +21,7 @@ class Trade:
     quantity: int
     limit_price: float | None
 
-def validate_trade(trade: Trade) -> None: ...
+def check_risk_limits(trade: Trade, limits: RiskLimits) -> RiskDecision: ...
 def price_trade(trade: Trade, market) -> Price: ...
 def execute_trade(trade: Trade, broker) -> Receipt: ...
 ```
@@ -30,7 +30,7 @@ Avoid:
 
 ```python
 class Trade:
-    def validate(self): ...
+    def check_risk_limits(self): ...
     def price(self): ...
     def execute(self): ...
 
@@ -88,7 +88,7 @@ When features combine orthogonally, composition usually stays simpler than inher
 
 Start simple:
 
-- a plain struct, record, dict, or typed object for data
+- a plain struct, record, or typed object for data
 - one module or set of functions per behavior cluster
 - one obvious place for orchestration
 

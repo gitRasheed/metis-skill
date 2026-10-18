@@ -10,17 +10,21 @@ Prefer:
 
 ```python
 def test_parse_signup_form_rejects_missing_email():
-    result = parse_signup_form({"password": "secret"})
-    assert result == {"error": "email_required"}
+    with pytest.raises(InvalidSignup, match="email_required"):
+        parse_signup_form({"password": "secret"})
 ```
 
 Avoid:
 
 ```python
 for case in cases:
-    result = parse_signup_form(case.input)
-    if case.want_error and result.ok:
-        raise AssertionError("expected error")
+    try:
+        parse_signup_form(case.input)
+        rejected = False
+    except InvalidSignup:
+        rejected = True
+    if rejected != case.want_error:
+        raise AssertionError("wrong outcome")
 ```
 
 In the second example, the test harness itself contains logic that can be wrong. In the first, a failure points much more directly at the production behavior.

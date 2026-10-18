@@ -1,0 +1,233 @@
+diff --git a/src/main/java/com/acme/pricing/config/AppContext.java b/src/main/java/com/acme/pricing/config/AppContext.java
+index bb5a9e4..f4b7790 100644
+--- a/src/main/java/com/acme/pricing/config/AppContext.java
++++ b/src/main/java/com/acme/pricing/config/AppContext.java
+@@ -4,6 +4,8 @@ import com.acme.pricing.repository.CustomerRepository;
+ import com.acme.pricing.repository.DiscountRepository;
+ import com.acme.pricing.repository.InMemoryCustomerRepository;
+ import com.acme.pricing.repository.InMemoryDiscountRepository;
++import com.acme.pricing.repository.InMemorySegmentRuleRepository;
++import com.acme.pricing.repository.SegmentRuleRepository;
+ import com.acme.pricing.service.PricingService;
+ import com.acme.pricing.service.PricingServiceImpl;
+ 
+@@ -12,12 +14,14 @@ public class AppContext {
+ 
+     private final CustomerRepository customerRepository;
+     private final DiscountRepository discountRepository;
++    private final SegmentRuleRepository segmentRuleRepository;
+     private final PricingService pricingService;
+ 
+     public AppContext() {
+         this.customerRepository = new InMemoryCustomerRepository();
+         this.discountRepository = new InMemoryDiscountRepository();
+-        this.pricingService = new PricingServiceImpl(customerRepository, discountRepository);
++        this.segmentRuleRepository = new InMemorySegmentRuleRepository();
++        this.pricingService = new PricingServiceImpl(customerRepository, discountRepository, segmentRuleRepository);
+     }
+ 
+     public CustomerRepository customerRepository() {
+@@ -28,6 +32,10 @@ public class AppContext {
+         return discountRepository;
+     }
+ 
++    public SegmentRuleRepository segmentRuleRepository() {
++        return segmentRuleRepository;
++    }
++
+     public PricingService pricingService() {
+         return pricingService;
+     }
+diff --git a/src/main/java/com/acme/pricing/discount/VolumeDiscount.java b/src/main/java/com/acme/pricing/discount/VolumeDiscount.java
+new file mode 100644
+index 0000000..d5eb450
+--- /dev/null
++++ b/src/main/java/com/acme/pricing/discount/VolumeDiscount.java
+@@ -0,0 +1,28 @@
++package com.acme.pricing.discount;
++
++import java.math.BigDecimal;
++import java.util.Comparator;
++import java.util.List;
++import java.util.Optional;
++
++/** Percentage off each line, by the highest tier that line's quantity reaches. */
++public class VolumeDiscount extends Discount {
++
++    private final List<VolumeTier> tiers;
++
++    public VolumeDiscount(String code, List<VolumeTier> tiers) {
++        super(code);
++        this.tiers = List.copyOf(tiers);
++    }
++
++    public List<VolumeTier> getTiers() {
++        return tiers;
++    }
++
++    public Optional<BigDecimal> percentFor(int quantity) {
++        return tiers.stream()
++                .filter(tier -> quantity >= tier.minQuantity())
++                .max(Comparator.comparingInt(VolumeTier::minQuantity))
++                .map(VolumeTier::percent);
++    }
++}
+diff --git a/src/main/java/com/acme/pricing/discount/VolumeTier.java b/src/main/java/com/acme/pricing/discount/VolumeTier.java
+new file mode 100644
+index 0000000..c519414
+--- /dev/null
++++ b/src/main/java/com/acme/pricing/discount/VolumeTier.java
+@@ -0,0 +1,6 @@
++package com.acme.pricing.discount;
++
++import java.math.BigDecimal;
++
++public record VolumeTier(int minQuantity, BigDecimal percent) {
++}
+diff --git a/src/main/java/com/acme/pricing/model/SegmentDiscountRule.java b/src/main/java/com/acme/pricing/model/SegmentDiscountRule.java
+new file mode 100644
+index 0000000..4771fe5
+--- /dev/null
++++ b/src/main/java/com/acme/pricing/model/SegmentDiscountRule.java
+@@ -0,0 +1,10 @@
++package com.acme.pricing.model;
++
++import java.util.Set;
++
++public record SegmentDiscountRule(String segment, Set<String> discountCodes) {
++
++    public SegmentDiscountRule {
++        discountCodes = Set.copyOf(discountCodes);
++    }
++}
+diff --git a/src/main/java/com/acme/pricing/repository/InMemorySegmentRuleRepository.java b/src/main/java/com/acme/pricing/repository/InMemorySegmentRuleRepository.java
+new file mode 100644
+index 0000000..b94189b
+--- /dev/null
++++ b/src/main/java/com/acme/pricing/repository/InMemorySegmentRuleRepository.java
+@@ -0,0 +1,29 @@
++package com.acme.pricing.repository;
++
++import com.acme.pricing.model.SegmentDiscountRule;
++
++import java.util.ArrayList;
++import java.util.LinkedHashMap;
++import java.util.List;
++import java.util.Map;
++import java.util.Optional;
++
++public class InMemorySegmentRuleRepository implements SegmentRuleRepository {
++
++    private final Map<String, SegmentDiscountRule> rulesBySegment = new LinkedHashMap<>();
++
++    @Override
++    public synchronized void save(SegmentDiscountRule rule) {
++        rulesBySegment.put(rule.segment(), rule);
++    }
++
++    @Override
++    public synchronized Optional<SegmentDiscountRule> findBySegment(String segment) {
++        return Optional.ofNullable(rulesBySegment.get(segment));
++    }
++
++    @Override
++    public synchronized List<SegmentDiscountRule> findAll() {
++        return new ArrayList<>(rulesBySegment.values());
++    }
++}
+diff --git a/src/main/java/com/acme/pricing/repository/SegmentRuleRepository.java b/src/main/java/com/acme/pricing/repository/SegmentRuleRepository.java
+new file mode 100644
+index 0000000..16f5f14
+--- /dev/null
++++ b/src/main/java/com/acme/pricing/repository/SegmentRuleRepository.java
+@@ -0,0 +1,15 @@
++package com.acme.pricing.repository;
++
++import com.acme.pricing.model.SegmentDiscountRule;
++
++import java.util.List;
++import java.util.Optional;
++
++public interface SegmentRuleRepository {
++
++    void save(SegmentDiscountRule rule);
++
++    Optional<SegmentDiscountRule> findBySegment(String segment);
++
++    List<SegmentDiscountRule> findAll();
++}
+diff --git a/src/main/java/com/acme/pricing/service/PricingServiceImpl.java b/src/main/java/com/acme/pricing/service/PricingServiceImpl.java
+index 778e90a..29864c2 100644
+--- a/src/main/java/com/acme/pricing/service/PricingServiceImpl.java
++++ b/src/main/java/com/acme/pricing/service/PricingServiceImpl.java
+@@ -4,17 +4,22 @@ import com.acme.pricing.discount.BuyXGetYFreeDiscount;
+ import com.acme.pricing.discount.Discount;
+ import com.acme.pricing.discount.FixedAmountDiscount;
+ import com.acme.pricing.discount.PercentageDiscount;
++import com.acme.pricing.discount.VolumeDiscount;
+ import com.acme.pricing.model.AppliedDiscount;
+ import com.acme.pricing.model.Customer;
+ import com.acme.pricing.model.LineItem;
+ import com.acme.pricing.model.Quote;
+ import com.acme.pricing.model.QuoteRequest;
++import com.acme.pricing.model.SegmentDiscountRule;
+ import com.acme.pricing.repository.CustomerRepository;
+ import com.acme.pricing.repository.DiscountRepository;
++import com.acme.pricing.repository.SegmentRuleRepository;
+ 
+ import java.math.BigDecimal;
+ import java.util.ArrayList;
++import java.util.HashSet;
+ import java.util.List;
++import java.util.Set;
+ 
+ public class PricingServiceImpl implements PricingService {
+ 
+@@ -22,10 +27,13 @@ public class PricingServiceImpl implements PricingService {
+ 
+     private final CustomerRepository customerRepository;
+     private final DiscountRepository discountRepository;
++    private final SegmentRuleRepository segmentRuleRepository;
+ 
+-    public PricingServiceImpl(CustomerRepository customerRepository, DiscountRepository discountRepository) {
++    public PricingServiceImpl(CustomerRepository customerRepository, DiscountRepository discountRepository,
++                              SegmentRuleRepository segmentRuleRepository) {
+         this.customerRepository = customerRepository;
+         this.discountRepository = discountRepository;
++        this.segmentRuleRepository = segmentRuleRepository;
+     }
+ 
+     @Override
+@@ -44,7 +52,18 @@ public class PricingServiceImpl implements PricingService {
+ 
+         List<AppliedDiscount> applied = new ArrayList<>();
+         BigDecimal discountTotal = MoneyRounding.toCents(BigDecimal.ZERO);
++        Set<String> restrictedCodes = new HashSet<>();
++        for (SegmentDiscountRule rule : segmentRuleRepository.findAll()) {
++            restrictedCodes.addAll(rule.discountCodes());
++        }
++        Set<String> segmentCodes = segmentRuleRepository.findBySegment(customer.segment())
++                .map(SegmentDiscountRule::discountCodes)
++                .orElse(Set.of());
++
+         for (Discount discount : discountRepository.findAll()) {
++            if (restrictedCodes.contains(discount.getCode()) && !segmentCodes.contains(discount.getCode())) {
++                continue;
++            }
+             BigDecimal amount = MoneyRounding.toCents(amountFor(discount, request.items(), subtotal));
+             if (amount.signum() > 0) {
+                 applied.add(new AppliedDiscount(discount.getCode(), amount));
+@@ -79,6 +98,13 @@ public class PricingServiceImpl implements PricingService {
+                 }
+             }
+             return amount;
++        } else if (discount instanceof VolumeDiscount volume) {
++            BigDecimal amount = BigDecimal.ZERO;
++            for (LineItem item : items) {
++                BigDecimal percent = volume.percentFor(item.quantity()).orElse(BigDecimal.ZERO);
++                amount = amount.add(item.lineAmount().multiply(percent).divide(HUNDRED));
++            }
++            return amount;
+         }
+         throw new IllegalStateException("Unsupported discount type: " + discount.getClass().getName());
+     }

@@ -10,13 +10,12 @@ Example:
 
 ```python
 def register_user(form_data):
-    user = parse_signup_form(form_data)
-    ensure_email_available(user.email)
-    password_hash = hash_password(user.password)
-    return save_user(user, password_hash)
+    signup = parse_signup_form(form_data)
+    password_hash = hash_password(signup.password)
+    return save_new_user(signup, password_hash)
 ```
 
-At this stage, the helpers do not need to exist yet. The point is to lock in the desired flow, names, and boundaries first.
+At this stage, the helpers do not need to exist yet. The point is to lock in the desired flow, names, and boundaries first. `save_new_user(signup, password_hash) -> User | EmailTaken` owns the email-uniqueness rule through a unique constraint, so the caller has no separate availability check that two concurrent signups could both pass.
 
 Ask:
 
@@ -58,5 +57,7 @@ If you are wrapping a rigid external API, you may not control the natural interf
 - create an adapter layer
 - keep ugly external details near the boundary
 - keep the rest of your code speaking in the interface you wish you had
+
+For a hard subsystem, keep the sketch as a hypothesis and refit the interface once the implementation works.
 
 The goal is not fantasy for its own sake. The goal is to make the rest of your code speak in the cleanest interface you can responsibly maintain.

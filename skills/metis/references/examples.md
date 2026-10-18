@@ -11,7 +11,7 @@ These examples are patterns, not templates. Keep the local language, framework, 
 3. Mutually exclusive states vs composable features
 4. I/O at the edge, pure logic inside
 5. Push ifs up, fors down
-6. Boundary validation and replay safety
+6. Boundary parsing and replay safety
 7. Behavior-first tests
 8. SOLID without ceremony
 9. Comment discipline
@@ -273,11 +273,11 @@ def record_warning_alerts(alerts, audit_log):
         audit_log.write("warning", alert.id)
 ```
 
-The top-level function owns branching. Leaf functions own repeated work.
+The top-level function owns branching. Leaf functions own repeated work. The regrouping is safe here because alerts are independent and nothing reads the audit log in arrival order.
 
-## 6. Boundary validation and replay safety
+## 6. Boundary parsing and replay safety
 
-Validate where external data enters, and use stable external identity when repeated delivery is possible.
+Parse external data where it enters, and use stable external identity when repeated delivery is possible.
 
 Avoid:
 
@@ -351,8 +351,8 @@ def test_coupon_cases():
 
     for case in cases:
         result = apply_coupon(case["cart"], case["code"])
-        if case["want_error"] and result.ok:
-            raise AssertionError("expected error")
+        if case["want_error"] and isinstance(result, CouponApplied):
+            raise AssertionError("expected rejection")
         if not case["want_error"] and result.total != case["want"]:
             raise AssertionError("wrong total")
 ```
@@ -360,20 +360,19 @@ def test_coupon_cases():
 Prefer:
 
 ```python
+CouponResult = CouponApplied | CouponRejected
+
+
 def test_save10_discount_applies_to_eligible_cart():
     result = apply_coupon(Cart(total=100), "SAVE10")
 
-    assert result == CouponResult(ok=True, total=90)
+    assert result == CouponApplied(total=90)
 
 
 def test_save10_discount_rejects_cart_below_minimum():
     result = apply_coupon(Cart(total=40), "SAVE10")
 
-    assert result == CouponResult(
-        ok=False,
-        total=40,
-        reason="minimum_not_met",
-    )
+    assert result == CouponRejected(total=40, reason="minimum_not_met")
 ```
 
 If a table genuinely helps, use one. But do not hide the behavior inside a mini test framework unless the extra indirection earns its place.
@@ -483,7 +482,7 @@ If the comment only says what the next line does, delete it.
 
 ## 10. Final cleanup
 
-Before committing or pushing, remove scaffolding that helped the agent think but does not belong in the repo.
+Before committing, remove scaffolding that helped the agent think but does not belong in the repo.
 
 Keep:
 

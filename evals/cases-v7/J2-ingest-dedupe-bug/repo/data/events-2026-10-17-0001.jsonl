@@ -1,0 +1,6 @@
+{"eventId":"7f3a-0001","userId":"user-104","type":"PAYMENT","amount":49.99,"timestamp":"2026-10-17T06:12:44Z"}
+{"eventId":"7f3a-0002","userId":"user-221","type":"VIEW","amount":0,"timestamp":"2026-10-17T06:13:02Z"}
+{"eventId":"7f3a-0003","userId":"user-221","type":"PAYMENT","amount":12.00,"timestamp":"2026-10-17T06:15:10Z"}
+{"eventId":"7f3a-0004","userId":"user-390","type":"PAYMENT","amount":120.00,"timestamp":"2026-10-17T07:01:33Z"}
+{"eventId":"7f3a-0005","userId":"user-104","type":"VIEW","amount":0,"timestamp":"2026-10-17T07:20:00Z"}
+{"eventId":"7f3a-0006","userId":"user-390","type":"REFUND","amount":20.00,"timestamp":"2026-10-17T08:45:12Z"}

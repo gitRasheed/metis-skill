@@ -36,9 +36,10 @@ refused than shipped.
 | [cases-v4](cases-v4/) | Review cases with frozen keys | One case later served as an untouched holdout for v5 |
 | [cases-v5](cases-v5/) | Which exact skill text is best? | Sixteen permutations, five cases, about ninety hand-scored runs; found that guidance placement, not content volume, drives interference; shipped v1.2.0. [FINAL-REPORT.md](cases-v5/FINAL-REPORT.md) |
 | [cases-v6](cases-v6/) | Parse-don't-validate, book-derived rules, and external validity | Six texts, two preregistered waves, about 195 runs; per-transcript sub-agent scoring adjudicated by hand; external leg on the Aider polyglot benchmark where every arm passed all 72 test runs and a blinded judge still preferred Metis code 3:1 over baseline; shipped v1.3.0. [REPORT.md](cases-v6/REPORT.md) |
+| [cases-v7](cases-v7/) | Does a leaner, quieter v1.4.0 keep v1.3.2's code quality and review depth? | Correctness saturated at SOTA, so the round measured blinded inherit preference, frozen review keys, a noise scan and cost. Three preregistered waves: two candidates refused, the third passed every bar at n=6. Shipped v1.4.0. [REPORT.md](cases-v7/REPORT.md) |
 
-Across the last two rounds, twenty-two skill texts were tested and two
-shipped.
+Across the last three rounds, twenty-six skill texts were tested and
+three shipped.
 
 ## What is committed
 

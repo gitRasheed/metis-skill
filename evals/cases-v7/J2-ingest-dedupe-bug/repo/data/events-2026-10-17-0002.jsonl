@@ -1,0 +1,5 @@
+{"eventId":"7f3a-0004","userId":"user-390","type":"PAYMENT","amount":120.00,"timestamp":"2026-10-17T07:01:33Z"}
+{"eventId":"7f3a-0005","userId":"user-104","type":"VIEW","amount":0,"timestamp":"2026-10-17T07:20:00Z"}
+{"eventId":"7f3a-0007","userId":"user-104","type":"PAYMENT","amount":15.25,"timestamp":"2026-10-17T11:02:09Z"}
+{"eventId":"7f3a-0008","userId":"user-512","type":"PAYMENT","amount":8.75,"timestamp":"2026-10-17T12:30:00Z"}
+{"eventId":"7f3a-0009","userId":"user-221","type":"PAYMENT","amount":12.00,"timestamp":"2026-10-17T13:14:51Z"}

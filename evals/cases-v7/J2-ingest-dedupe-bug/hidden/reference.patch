@@ -1,0 +1,91 @@
+diff --git a/src/main/java/com/acme/ingest/source/DirectoryEventSource.java b/src/main/java/com/acme/ingest/source/DirectoryEventSource.java
+index a4ec51c..d152024 100644
+--- a/src/main/java/com/acme/ingest/source/DirectoryEventSource.java
++++ b/src/main/java/com/acme/ingest/source/DirectoryEventSource.java
+@@ -7,10 +7,15 @@ import java.io.UncheckedIOException;
+ import java.nio.file.Files;
+ import java.nio.file.Path;
+ import java.util.ArrayList;
++import java.util.HashSet;
+ import java.util.List;
++import java.util.Set;
+ import java.util.stream.Stream;
+ 
+-/** Reads every batch file in the data directory. Files with an unknown extension are skipped. */
++/**
++ * Reads every batch file in the data directory. Files with an unknown extension are skipped.
++ * The queue is at-least-once, so a redelivered eventId is dropped and the first copy wins.
++ */
+ public class DirectoryEventSource implements EventSource {
+ 
+     private final Path dataDir;
+@@ -24,10 +29,15 @@ public class DirectoryEventSource implements EventSource {
+     @Override
+     public List<Event> readAll() {
+         List<Event> events = new ArrayList<>();
++        Set<String> seenEventIds = new HashSet<>();
+         for (Path file : batchFiles()) {
+             for (EventParser parser : parsers) {
+                 if (parser.supports(file)) {
+-                    events.addAll(parser.parse(file));
++                    for (Event event : parser.parse(file)) {
++                        if (seenEventIds.add(event.eventId())) {
++                            events.add(event);
++                        }
++                    }
+                     break;
+                 }
+             }
+diff --git a/src/main/java/com/acme/ingest/source/EventSource.java b/src/main/java/com/acme/ingest/source/EventSource.java
+index 27c1de6..9a46e92 100644
+--- a/src/main/java/com/acme/ingest/source/EventSource.java
++++ b/src/main/java/com/acme/ingest/source/EventSource.java
+@@ -6,6 +6,6 @@ import java.util.List;
+ 
+ public interface EventSource {
+ 
+-    /** Every event from every batch, in batch file name order. */
++    /** Every distinct event from every batch, in batch file name order. */
+     List<Event> readAll();
+ }
+diff --git a/src/test/java/com/acme/ingest/job/IngestJobImplTest.java b/src/test/java/com/acme/ingest/job/IngestJobImplTest.java
+index 4501a05..5da5a3c 100644
+--- a/src/test/java/com/acme/ingest/job/IngestJobImplTest.java
++++ b/src/test/java/com/acme/ingest/job/IngestJobImplTest.java
+@@ -32,9 +32,9 @@ public class IngestJobImplTest {
+         DailySummary summary = new AppContext(data.dir()).ingestJob().run(DAY);
+ 
+         assertEquals(List.of(
+-                new UserTotal("u1", new BigDecimal("90.00"), 4),
++                new UserTotal("u1", new BigDecimal("65.00"), 3),
+                 new UserTotal("u2", new BigDecimal("10.00"), 2)), summary.users());
+-        assertEquals(new BigDecimal("100.00"), summary.netTotal());
++        assertEquals(new BigDecimal("75.00"), summary.netTotal());
+     }
+ 
+     @Test
+diff --git a/src/test/java/com/acme/ingest/source/DirectoryEventSourceTest.java b/src/test/java/com/acme/ingest/source/DirectoryEventSourceTest.java
+index 45853b7..c2f679f 100644
+--- a/src/test/java/com/acme/ingest/source/DirectoryEventSourceTest.java
++++ b/src/test/java/com/acme/ingest/source/DirectoryEventSourceTest.java
+@@ -36,6 +36,20 @@ public class DirectoryEventSourceTest {
+                 events);
+     }
+ 
++    @Test
++    public void redeliveredEventIdsAreReadOnce() {
++        TempData data = new TempData()
++                .file("b-001.jsonl",
++                        "{\"eventId\":\"e-1\",\"userId\":\"u-1\",\"type\":\"PAYMENT\",\"amount\":5.00,\"timestamp\":\"2026-10-17T10:00:00Z\"}",
++                        "{\"eventId\":\"e-1\",\"userId\":\"u-1\",\"type\":\"PAYMENT\",\"amount\":5.00,\"timestamp\":\"2026-10-17T10:00:00Z\"}")
++                .file("b-002.csv",
++                        "event_id,user_id,type,amount,timestamp",
++                        "e-1,u-1,PAYMENT,5.00,2026-10-17T10:00:00Z",
++                        "e-2,u-1,PAYMENT,5.00,2026-10-17T10:00:00Z");
++
++        assertEquals(List.of("e-1", "e-2"), sourceFor(data).readAll().stream().map(Event::eventId).toList());
++    }
++
+     @Test
+     public void csvColumnsMayBeReordered() {
+         TempData data = new TempData().file("b.csv",
