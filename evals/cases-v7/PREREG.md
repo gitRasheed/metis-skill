@@ -135,7 +135,7 @@ Rule 2 is pending the R1 rescore of v140b.
 
 **Ship rule.** Rules 1 to 5 are unchanged. Separately, I'll report whether each hypothesis's prediction held.
 
-**If B2 fails.** v1.4.0 doesn't ship from this round. I'll report to Rasheed with the evidence and these options: ship v1.3.2's text with only the description change, or run another round.
+**If B2 fails.** v1.4.0 doesn't ship from this round. I'll report back with the evidence and these options: ship v1.3.2's text with only the description change, or run another round.
 
 **R1 rescore of v140b** (fresh blind Opus scorer, scoring A's 4 and v140b's 4 together):
 
@@ -151,7 +151,7 @@ Rule 2 is pending the R1 rescore of v140b.
 
 ## Wave 3 preregistration (2026-10-18, written before any wave 3 run)
 
-**Why this wave exists.** Rasheed chose to push v1.4.0 forward after wave 2. Claude usage is low, so this wave raises n on Sol only.
+**Why this wave exists.** The decision after wave 2 was to push v1.4.0 forward. Claude usage was low, so this wave raises n on Sol only.
 
 **Candidate B3:** B2 plus one clause in Design 3.
 - The clause: "Add new behavior through a focused function, variant, adapter, or wrapper rather than edits spread across existing branches."
@@ -191,7 +191,7 @@ Rule 2 is pending the R1 rescore of v140b.
 - **H4 held, counting shared helper types as seams.** Sol J2 used a seam in 4 of 6 B3 runs (2 decorators, 2 shared helper types), against 3 of 6 for A. Counting decorators or wrappers only, B3 is 2/6.
 - **Verdict:** B3 meets every wave 3 rule for Sol. Opus was not re-tested at higher n, and in waves 1 and 2 at n=2 it stays below the bar.
 - **Harness note.** The first two Astra judge runs read the wrong directory: opencode takes its project root from git and from `$PWD`. That was fixed with `git init` per packet and an explicit `PWD`, and all 20 judges reran before any result was read.
-- **After wave 3,** two wording edits Rasheed approved:
+- **After wave 3,** two approved wording edits:
   - Design 3's O clause was rephrased in data terms.
   - The SOLID line now points to where each letter lives in the rules.
 
