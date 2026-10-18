@@ -116,11 +116,10 @@ v1.4.0 came out of that round. It holds v1.3.2's code quality and review depth a
 The core ideas are borrowed, then filtered through the evals:
 
 - call-site-first design by wishful thinking: [SICP](https://sicp.sourceacademy.org/)
-- plain data plus systems over object hierarchies: [Casey Muratori, "The Big OOPs"](https://www.computerenhance.com/p/the-big-oops-anatomy-of-a-thirty)
+- plain data plus systems over object hierarchies, and performance designed in rather than deferred: Casey Muratori's Better Software Conference talks, ["The Big OOPs"](https://www.computerenhance.com/p/the-big-oops-anatomy-of-a-thirty) (2025) and ["The Root of the Root of All Evil"](https://www.youtube.com/watch?v=hpj6r6CjJf8) (2026)
 - typed domain state and unions for exclusive states: [Scott Wlaschin, *Domain Modeling Made Functional*](https://pragprog.com/titles/swdddf/domain-modeling-made-functional/)
 - parse, don't validate: [Alexis King](https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/)
 - assertions, negative space, performance ordering: [TigerStyle](https://github.com/tigerbeetle/tigerbeetle/blob/main/docs/TIGER_STYLE.md)
-- performance designed in, serial dependency chains, contracts that include cost: Casey Muratori, ["The Root of the Root of All Evil"](https://www.youtube.com/watch?v=hpj6r6CjJf8) and his [Pragmatic Engineer interview](https://youtu.be/8xBJPa_480Q)
 - deep modules and defining errors out of existence: [John Ousterhout, *A Philosophy of Software Design*](https://web.stanford.edu/~ouster/cgi-bin/book.php)
 - replay-safe effects with stable identities: [Eric Normand, *Grokking Simplicity*](https://grokkingsimplicity.com/)
 - tests are code, minimize test logic: [ThePrimeagen's Boot.dev testing lecture](https://youtu.be/FknTw9bJsXM?t=2500)
