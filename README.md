@@ -80,7 +80,7 @@ Each release is A/B tested against the last one under thresholds set before scor
 
 ## Repo
 
-`skills/metis/` is the skill, `.claude/skills/metis/` mirrors it for Claude Code, `PORTABLE_PROMPT.md` is the plain-markdown version, and `evals/` holds cases, keys and reports.
+`skills/metis/` is the skill, `PORTABLE_PROMPT.md` is the plain-markdown version, and `evals/` holds cases, keys and reports.
 
 ## Sources
 
